@@ -12,6 +12,14 @@ public class Aluno extends Pessoa {
     private List<Ocorrencia> ocorrencias;
     private List<Responsavel> responsaveis;
 
+    public Aluno(String nome, String cpf) {
+        super(nome, cpf);
+    }
+
+    public Aluno() {
+        super();
+    }
+
     public double calcularMedia(Disciplina disciplina) {
         return 0.0;
     }
@@ -78,5 +86,14 @@ public class Aluno extends Pessoa {
 
     public void setResponsaveis(List<Responsavel> responsaveis) {
         this.responsaveis = responsaveis;
+    }
+
+    @Override
+    public void exibirInformacoes() {
+        System.out.println("Tipo: Aluno");
+        System.out.println("Nome: " + getNome());
+        System.out.println("CPF: " + getCpf());
+        System.out.println("Matrícula: " + this.matricula);
+        System.out.println("Ano Letivo: " + this.anoLetivo);
     }
 }

@@ -1,5 +1,8 @@
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\dados\IRepositorio.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\dados\RepositorioAlunoDAO.java
+C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\excecoes\DadoInvalidoException.java
+C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\excecoes\EntidadeNaoEncontradaException.java
+C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\fachada\EscolaFachada.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\main\SistemaEscolarTeste.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Acesso.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Aluno.java
@@ -10,6 +13,7 @@ C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Frequencia.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Funcionario.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\GeradorRelatorio.java
+C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\IAlunoServico.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Nota.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Ocorrencia.java
 C:\Users\55819\OneDrive\Documentos\NetBeansProjects\SistemaEscolar\src\main\java\br\com\escola\negocio\Pessoa.java

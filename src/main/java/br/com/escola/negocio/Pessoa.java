@@ -1,15 +1,18 @@
 package br.com.escola.negocio;
 
-import java.util.Date;
+import java.util.Objects;
 
 public abstract class Pessoa {
     private String nome;
     private String cpf;
-    private Date dataNasc;
-    private String endereco;
-    private String telefone;
-    private String email;
-    private int idade;
+
+    public Pessoa(String nome, String cpf) {
+        this.nome = nome;
+        this.cpf = cpf;
+    }
+
+    public Pessoa() {
+    }
 
     public String getNome() {
         return nome;
@@ -27,50 +30,18 @@ public abstract class Pessoa {
         this.cpf = cpf;
     }
 
-    public Date getDataNasc() {
-        return dataNasc;
+    public abstract void exibirInformacoes();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Pessoa pessoa)) return false; 
+        
+        return Objects.equals(this.cpf, pessoa.cpf);
     }
 
-    public void setDataNasc(Date dataNasc) {
-        this.dataNasc = dataNasc;
-    }
-
-    public String getEndereco() {
-        return endereco;
-    }
-
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
-
-    public String getTelefone() {
-        return telefone;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public int getIdade() {
-        return idade;
-    }
-
-    public void setIdade(int idade) {
-        this.idade = idade;
-    }
-
-    public boolean validarCPF() {
-        return false;
-    }
-
-    public void atualizarDados(Pessoa dados) {
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.cpf);
     }
 }

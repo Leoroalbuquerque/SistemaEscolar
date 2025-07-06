@@ -12,12 +12,14 @@ br\com\escola\dados\IRepositorio.class
 br\com\escola\negocio\PessoaFactory$1.class
 br\com\escola\negocio\Funcionario.class
 br\com\escola\util\DiarioClasse.class
+br\com\escola\fachada\EscolaFachada.class
 br\com\escola\util\BoletimEscolar.class
 br\com\escola\negocio\Professor.class
 br\com\escola\negocio\Frequencia.class
 br\com\escola\negocio\PessoaFactory.class
 br\com\escola\negocio\Acesso.class
 br\com\escola\negocio\Ocorrencia.class
+br\com\escola\negocio\IAlunoServico.class
 br\com\escola\util\HistoricoEscolar.class
 br\com\escola\negocio\Turma.class
 br\com\escola\negocio\TipoPessoa.class
@@ -25,4 +27,6 @@ br\com\escola\util\PDF.class
 br\com\escola\negocio\Avaliacao.class
 br\com\escola\main\SistemaEscolarTeste.class
 br\com\escola\negocio\AlunoServico.class
+br\com\escola\excecoes\EntidadeNaoEncontradaException.class
 br\com\escola\negocio\Nota.class
+br\com\escola\excecoes\DadoInvalidoException.class

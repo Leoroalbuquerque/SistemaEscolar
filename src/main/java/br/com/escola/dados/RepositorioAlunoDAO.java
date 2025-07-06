@@ -1,6 +1,7 @@
 package br.com.escola.dados;
 
 import br.com.escola.negocio.Aluno;
+import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,12 +18,17 @@ public class RepositorioAlunoDAO implements IRepositorio<Aluno, String> {
     }
 
     @Override
-    public Aluno buscarPorId(String id) {
+    public Aluno buscarPorId(String id) throws EntidadeNaoEncontradaException {
         System.out.println("Buscando aluno com matrícula: " + id);
-        return this.alunos.stream()
+        Aluno alunoEncontrado = this.alunos.stream()
             .filter(a -> a.getMatricula().equals(id))
             .findFirst()
             .orElse(null);
+
+        if (alunoEncontrado == null) {
+            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + id + " não encontrado.");
+        }
+        return alunoEncontrado;
     }
 
     @Override
@@ -34,11 +40,13 @@ public class RepositorioAlunoDAO implements IRepositorio<Aluno, String> {
     @Override
     public void atualizar(Aluno entidade) {
         System.out.println("Atualizando aluno com matrícula: " + entidade.getMatricula());
+        this.alunos.removeIf(a -> a.getMatricula().equals(entidade.getMatricula()));
+        this.alunos.add(entidade);
     }
 
-@Override
-public void deletar(String id) {
-    System.out.println("Deletando aluno com matrícula: " + id);
-    this.alunos.removeIf(aluno -> aluno.getMatricula().equals(id));
+    @Override
+    public void deletar(String id) {
+        System.out.println("Deletando aluno com matrícula: " + id);
+        this.alunos.removeIf(aluno -> aluno.getMatricula().equals(id));
     }
 }
