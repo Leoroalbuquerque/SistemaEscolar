@@ -9,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*; // Importa as asserções estáticas do JUnit 5
 
 public class AcessoTeste {
+    public static void main(String[] args) {
+        System.out.println("Teste");
+    }
 
     private Acesso sistemaAcesso;
 
@@ -129,4 +132,5 @@ public class AcessoTeste {
 
         assertFalse(sistemaAcesso.checarPermissao(generico, "QUALQUER_COISA"), "Usuário com perfil não mapeado não deve ter permissão.");
     }
+    
 }
