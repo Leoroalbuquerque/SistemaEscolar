@@ -1,24 +1,25 @@
 package br.com.escola.negocio;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Objects;
 
-public class Responsavel extends Pessoa {
-    private String parentesco;
+public class Responsavel extends Pessoa implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public Responsavel(String nome, String cpf, String parentesco) {
-        super(nome, cpf);
-        this.parentesco = parentesco;
-    }
+    private String parentesco; // Ex: Pai, Mãe, Avô, Tutora, etc.
+    private String cpfResponsavel; // CPF do responsável, servirá como ID único
+    private boolean principal; // Indica se é o responsável principal
 
     public Responsavel() {
         super();
     }
 
-    public List<Aluno> listarAlunos() {
-        return null;
-    }
-
-    public void receberNotificacoes(String mensagem) {
+    public Responsavel(String nome, String cpf, String telefone, String email,
+                       String parentesco, String cpfResponsavel, boolean principal) {
+        super(nome, cpf, telefone, email);
+        this.parentesco = parentesco;
+        this.cpfResponsavel = cpfResponsavel;
+        this.principal = principal;
     }
 
     public String getParentesco() {
@@ -29,11 +30,46 @@ public class Responsavel extends Pessoa {
         this.parentesco = parentesco;
     }
 
+    public String getCpfResponsavel() {
+        return cpfResponsavel;
+    }
+
+    public void setCpfResponsavel(String cpfResponsavel) {
+        this.cpfResponsavel = cpfResponsavel;
+    }
+
+    public boolean isPrincipal() {
+        return principal;
+    }
+
+    public void setPrincipal(boolean principal) {
+        this.principal = principal;
+    }
+
     @Override
-    public void exibirInformacoes() {
-        System.out.println("Tipo: Responsável");
-        System.out.println("Nome: " + getNome());
-        System.out.println("CPF: " + getCpf());
-        System.out.println("Parentesco: " + this.parentesco);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false; // Inclui a comparação da superclasse Pessoa
+        Responsavel that = (Responsavel) o;
+        return Objects.equals(cpfResponsavel, that.cpfResponsavel); // CPF do responsável como identificador único
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), cpfResponsavel);
+    }
+
+    @Override
+    public String toString() {
+        return "Responsavel{" +
+               "nome='" + getNome() + '\'' +
+               ", cpf='" + getCpf() + '\'' +
+               ", telefone='" + getTelefone() + '\'' +
+               ", email='" + getEmail() + '\'' +
+               ", parentesco='" + parentesco + '\'' +
+               ", cpfResponsavel='" + cpfResponsavel + '\'' +
+               ", principal=" + principal +
+               '}';
     }
 }

@@ -1,43 +1,35 @@
 package br.com.escola.negocio;
 
-import br.com.escola.util.BoletimEscolar;
-import br.com.escola.util.HistoricoEscolar;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Aluno extends Pessoa {
+public class Aluno extends Pessoa implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String matricula;
     private int anoLetivo;
-    private List<Nota> notas;
-    private List<Frequencia> frequencia;
-    private List<Ocorrencia> ocorrencias;
-    private List<Responsavel> responsaveis;
-
-    public Aluno(String nome, String cpf) {
-        super(nome, cpf);
-    }
+    private List<String> cpfsResponsaveis; // Lista de CPFs dos responsáveis
 
     public Aluno() {
         super();
+        this.cpfsResponsaveis = new ArrayList<>(); // Inicializa a lista
     }
 
-    public double calcularMedia(Disciplina disciplina) {
-        return 0.0;
+    public Aluno(String nome, String cpf, String telefone, String email, String matricula, int anoLetivo) {
+        super(nome, cpf, telefone, email);
+        this.matricula = matricula;
+        this.anoLetivo = anoLetivo;
+        this.cpfsResponsaveis = new ArrayList<>(); // Inicializa a lista
     }
 
-    public double calcularFrequencia(Disciplina disciplina) {
-        return 0.0;
-    }
-
-    public String verificarSituacaoAprovacao() {
-        return null;
-    }
-
-    public BoletimEscolar gerarBoletim() {
-        return null;
-    }
-
-    public HistoricoEscolar gerarHistorico() {
-        return null;
+    // Construtor com responsáveis (opcional, mas útil para testes ou inicialização)
+    public Aluno(String nome, String cpf, String telefone, String email, String matricula, int anoLetivo, List<String> cpfsResponsaveis) {
+        super(nome, cpf, telefone, email);
+        this.matricula = matricula;
+        this.anoLetivo = anoLetivo;
+        this.cpfsResponsaveis = cpfsResponsaveis != null ? new ArrayList<>(cpfsResponsaveis) : new ArrayList<>();
     }
 
     public String getMatricula() {
@@ -56,44 +48,48 @@ public class Aluno extends Pessoa {
         this.anoLetivo = anoLetivo;
     }
 
-    public List<Nota> getNotas() {
-        return notas;
+    public List<String> getCpfsResponsaveis() {
+        return cpfsResponsaveis;
     }
 
-    public void setNotas(List<Nota> notas) {
-        this.notas = notas;
+    public void setCpfsResponsaveis(List<String> cpfsResponsaveis) {
+        this.cpfsResponsaveis = cpfsResponsaveis != null ? new ArrayList<>(cpfsResponsaveis) : new ArrayList<>();
     }
 
-    public List<Frequencia> getFrequencia() {
-        return frequencia;
+    // Métodos para adicionar e remover responsáveis individualmente
+    public void adicionarResponsavel(String cpfResponsavel) {
+        if (cpfResponsavel != null && !cpfResponsavel.trim().isEmpty() && !this.cpfsResponsaveis.contains(cpfResponsavel)) {
+            this.cpfsResponsaveis.add(cpfResponsavel);
+        }
     }
 
-    public void setFrequencia(List<Frequencia> frequencia) {
-        this.frequencia = frequencia;
-    }
-
-    public List<Ocorrencia> getOcorrencias() {
-        return ocorrencias;
-    }
-
-    public void setOcorrencias(List<Ocorrencia> ocorrencias) {
-        this.ocorrencias = ocorrencias;
-    }
-
-    public List<Responsavel> getResponsaveis() {
-        return responsaveis;
-    }
-
-    public void setResponsaveis(List<Responsavel> responsaveis) {
-        this.responsaveis = responsaveis;
+    public void removerResponsavel(String cpfResponsavel) {
+        if (cpfResponsavel != null) {
+            this.cpfsResponsaveis.remove(cpfResponsavel);
+        }
     }
 
     @Override
-    public void exibirInformacoes() {
-        System.out.println("Tipo: Aluno");
-        System.out.println("Nome: " + getNome());
-        System.out.println("CPF: " + getCpf());
-        System.out.println("Matrícula: " + this.matricula);
-        System.out.println("Ano Letivo: " + this.anoLetivo);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        Aluno aluno = (Aluno) o;
+        return Objects.equals(matricula, aluno.matricula);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), matricula);
+    }
+
+    @Override
+    public String toString() {
+        return "Aluno{" +
+               "nome='" + getNome() + '\'' +
+               ", matricula='" + matricula + '\'' +
+               ", anoLetivo=" + anoLetivo +
+               ", cpfsResponsaveis=" + cpfsResponsaveis + // Inclui a lista de CPFs
+               '}';
     }
 }

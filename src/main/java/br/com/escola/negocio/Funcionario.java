@@ -1,27 +1,25 @@
 package br.com.escola.negocio;
 
-public class Funcionario extends Pessoa {
-    private String identificacao;
-    private String cargo;
-    private String setor;
+import java.io.Serializable;
+import java.util.Objects;
 
-    public Funcionario(String nome, String cpf, String identificacao, String cargo, String setor) {
-        super(nome, cpf);
-        this.identificacao = identificacao;
-        this.cargo = cargo;
-        this.setor = setor;
-    }
+public class Funcionario extends Pessoa implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private String cargo;
+    private String matriculaFuncional;
+    private double salario;
 
     public Funcionario() {
-        super();
+        super(); // Chama o construtor padrão de Pessoa
     }
 
-    public String getIdentificacao() {
-        return identificacao;
-    }
-
-    public void setIdentificacao(String identificacao) {
-        this.identificacao = identificacao;
+    public Funcionario(String nome, String cpf, String telefone, String email, 
+                       String cargo, String matriculaFuncional, double salario) {
+        super(nome, cpf, telefone, email); // Chama o construtor completo de Pessoa
+        this.cargo = cargo;
+        this.matriculaFuncional = matriculaFuncional;
+        this.salario = salario;
     }
 
     public String getCargo() {
@@ -32,21 +30,42 @@ public class Funcionario extends Pessoa {
         this.cargo = cargo;
     }
 
-    public String getSetor() {
-        return setor;
+    public String getMatriculaFuncional() {
+        return matriculaFuncional;
     }
 
-    public void setSetor(String setor) {
-        this.setor = setor;
+    public void setMatriculaFuncional(String matriculaFuncional) {
+        this.matriculaFuncional = matriculaFuncional;
+    }
+
+    public double getSalario() {
+        return salario;
+    }
+
+    public void setSalario(double salario) {
+        this.salario = salario;
     }
 
     @Override
-    public void exibirInformacoes() {
-        System.out.println("Tipo: Funcionário");
-        System.out.println("Nome: " + getNome());
-        System.out.println("CPF: " + getCpf());
-        System.out.println("Identificação: " + this.identificacao);
-        System.out.println("Cargo: " + this.cargo);
-        System.out.println("Setor: " + this.setor);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false; 
+        Funcionario that = (Funcionario) o;
+        return Objects.equals(matriculaFuncional, that.matriculaFuncional);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), matriculaFuncional);
+    }
+
+    @Override
+    public String toString() {
+        return "Funcionario{" +
+               "nome='" + getNome() + '\'' +
+               ", matriculaFuncional='" + matriculaFuncional + '\'' +
+               ", cargo='" + cargo + '\'' +
+               '}';
     }
 }

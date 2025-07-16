@@ -1,64 +1,73 @@
 package br.com.escola.negocio;
 
-import br.com.escola.util.DiarioClasse;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.Objects;
 
-public class Professor extends Pessoa {
-    private String numeroRegistro;
-    private String departamento;
-    private List<Disciplina> disciplinasLecionadas;
+public class Professor extends Pessoa implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    public Professor(String nome, String cpf, String numeroRegistro, String departamento) {
-        super(nome, cpf);
-        this.numeroRegistro = numeroRegistro;
-        this.departamento = departamento;
+    private String registroFuncional;
+    private String especialidade;
+    private double salario;
+
+    public Professor(String nome, String cpf, String telefone, String email, String registroFuncional, String especialidade, double salario) {
+        super(nome, cpf, telefone, email);
+        this.registroFuncional = registroFuncional;
+        this.especialidade = especialidade;
+        this.salario = salario;
     }
 
+    // Construtor padrão para desserialização JSON (Importante para Jackson)
     public Professor() {
         super();
     }
 
-    public void lancarNota(Aluno aluno, Disciplina disciplina, double valor, String tipo) {
+    // Getters e Setters
+    public String getRegistroFuncional() {
+        return registroFuncional;
     }
 
-    public void registrarFrequencia(Turma turma, Map<Aluno, Boolean> presencas) {
+    public void setRegistroFuncional(String registroFuncional) {
+        this.registroFuncional = registroFuncional;
     }
 
-    public DiarioClasse gerarDiarioClasse(Turma turma, Disciplina disciplina) {
-        return null;
+    public String getEspecialidade() {
+        return especialidade;
     }
 
-    public String getNumeroRegistro() {
-        return numeroRegistro;
+    public void setEspecialidade(String especialidade) {
+        this.especialidade = especialidade;
     }
 
-    public void setNumeroRegistro(String numeroRegistro) {
-        this.numeroRegistro = numeroRegistro;
+    public double getSalario() {
+        return salario;
     }
 
-    public String getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
-
-    public List<Disciplina> getDisciplinasLecionadas() {
-        return disciplinasLecionadas;
-    }
-
-    public void setDisciplinasLecionadas(List<Disciplina> disciplinasLecionadas) {
-        this.disciplinasLecionadas = disciplinasLecionadas;
+    public void setSalario(double salario) {
+        this.salario = salario;
     }
 
     @Override
-    public void exibirInformacoes() {
-        System.out.println("Tipo: Professor");
-        System.out.println("Nome: " + getNome());
-        System.out.println("CPF: " + getCpf());
-        System.out.println("Nº Registro: " + this.numeroRegistro);
-        System.out.println("Departamento: " + this.departamento);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false; // Inclui a comparação da classe pai
+        Professor professor = (Professor) o;
+        return Objects.equals(registroFuncional, professor.registroFuncional);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), registroFuncional);
+    }
+
+    @Override
+    public String toString() {
+        return "Professor{" +
+               "nome='" + getNome() + '\'' +
+               ", registroFuncional='" + registroFuncional + '\'' +
+               ", especialidade='" + especialidade + '\'' +
+               ", salario=" + salario +
+               '}';
     }
 }
