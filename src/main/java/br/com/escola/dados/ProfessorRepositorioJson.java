@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional; // Já presente, o que é ótimo!
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ProfessorRepositorioJson implements IRepositorio<Professor, String> {
@@ -24,7 +24,7 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
 
     public ProfessorRepositorioJson() {
         objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Formata o JSON para ser legível
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         carregarDados();
     }
 
@@ -56,7 +56,6 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
         if (entidade == null || entidade.getRegistroFuncional() == null || entidade.getRegistroFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Professor ou registro funcional não pode ser nulo.");
         }
-        // Embora não tenha sido erro do compilador, é bom verificar o nome também
         if (entidade.getNome() == null || entidade.getNome().trim().isEmpty()) {
             throw new DadoInvalidoException("Nome do professor é obrigatório.");
         }
@@ -70,16 +69,14 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
         salvarDados();
     }
 
-    @Override // CORRIGIDO: Nome do método para 'buscarPorId' e retorno para 'Optional<Professor>'
-    public Optional<Professor> buscarPorId(String id) { // Agora retorna Optional<Professor>
-        // A validação de 'id' nulo ou vazio deve ser feita no serviço ou no ponto de chamada.
-        // Aqui, apenas retornamos um Optional vazio se o ID for inválido.
+    @Override
+    public Optional<Professor> buscarPorId(String id) {
         if (id == null || id.trim().isEmpty()) {
             return Optional.empty();
         }
         return professores.stream()
                 .filter(p -> p.getRegistroFuncional().equals(id))
-                .findFirst(); // Retorna Optional<Professor>
+                .findFirst();
     }
 
     @Override
@@ -91,13 +88,11 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
             throw new DadoInvalidoException("Nome do professor é obrigatório para atualização.");
         }
 
-        // Usar buscarPorId para verificar a existência de forma consistente
         Optional<Professor> professorExistenteOpt = buscarPorId(entidade.getRegistroFuncional());
         if (professorExistenteOpt.isEmpty()) {
             throw new EntidadeNaoEncontradaException("Professor com registro " + entidade.getRegistroFuncional() + " não encontrado para atualização.");
         }
-        
-        // Remove o antigo e adiciona o novo (atualizado)
+
         professores.removeIf(p -> p.getRegistroFuncional().equals(entidade.getRegistroFuncional()));
         this.professores.add(entidade);
         salvarDados();
@@ -118,15 +113,12 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
 
     @Override
     public List<Professor> listarTodos() {
-        return new ArrayList<>(professores); // Retorna uma cópia para evitar modificações diretas
+        return new ArrayList<>(professores);
     }
 
-    /**
-     * Limpa todos os dados de professores do repositório e persiste a lista vazia no arquivo JSON.
-     */
     public void limpar() {
-        this.professores.clear(); // Limpa a lista em memória
-        salvarDados();             // Salva a lista vazia no arquivo
+        this.professores.clear();
+        salvarDados();
         System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

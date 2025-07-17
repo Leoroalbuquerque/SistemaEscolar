@@ -17,12 +17,10 @@ public class Professor extends Pessoa implements Serializable {
         this.salario = salario;
     }
 
-    // Construtor padrão para desserialização JSON (Importante para Jackson)
     public Professor() {
         super();
     }
 
-    // Getters e Setters
     public String getRegistroFuncional() {
         return registroFuncional;
     }
@@ -51,7 +49,7 @@ public class Professor extends Pessoa implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false; // Inclui a comparação da classe pai
+        if (!super.equals(o)) return false;
         Professor professor = (Professor) o;
         return Objects.equals(registroFuncional, professor.registroFuncional);
     }

@@ -6,9 +6,9 @@ import java.util.Objects;
 public class Responsavel extends Pessoa implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String parentesco; // Ex: Pai, Mãe, Avô, Tutora, etc.
-    private String cpfResponsavel; // CPF do responsável, servirá como ID único
-    private boolean principal; // Indica se é o responsável principal
+    private String parentesco;
+    private String cpfResponsavel;
+    private boolean principal;
 
     public Responsavel() {
         super();
@@ -50,9 +50,9 @@ public class Responsavel extends Pessoa implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false; // Inclui a comparação da superclasse Pessoa
+        if (!super.equals(o)) return false;
         Responsavel that = (Responsavel) o;
-        return Objects.equals(cpfResponsavel, that.cpfResponsavel); // CPF do responsável como identificador único
+        return Objects.equals(cpfResponsavel, that.cpfResponsavel);
     }
 
     @Override

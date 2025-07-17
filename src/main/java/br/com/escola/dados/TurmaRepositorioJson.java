@@ -116,12 +116,9 @@ public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
         return new ArrayList<>(turmas);
     }
 
-    /**
-     * Limpa todos os dados de turmas do repositório e persiste a lista vazia no arquivo JSON.
-     */
     public void limpar() {
-        this.turmas.clear(); // Limpa a lista em memória
-        salvarDados();       // Salva a lista vazia no arquivo
+        this.turmas.clear();
+        salvarDados();
         System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

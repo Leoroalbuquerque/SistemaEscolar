@@ -121,9 +121,6 @@ public class AlunoRepositorioJson implements IRepositorio<Aluno, String> {
         return new ArrayList<>(alunosCarregados);
     }
 
-    /**
-     * Limpa todos os dados do repositório e persiste a lista vazia no arquivo JSON.
-     */
     public void limpar() {
         this.alunosCarregados.clear(); // Limpa a lista em memória
         salvarAlunosNoArquivo();       // Salva a lista vazia no arquivo

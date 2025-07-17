@@ -5,7 +5,7 @@ import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import br.com.escola.excecoes.DadoInvalidoException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional; // Adicionado: Importação para Optional
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
@@ -20,7 +20,7 @@ public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
         if (entidade.getNome() == null || entidade.getNome().trim().isEmpty()) {
             throw new DadoInvalidoException("Erro: Nome do aluno é obrigatório para adição.");
         }
-        
+
         boolean existe = this.alunos.stream()
                 .anyMatch(a -> a != null && a.getMatricula() != null && a.getMatricula().equals(entidade.getMatricula()));
         if (existe) {
@@ -31,19 +31,15 @@ public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
         System.out.println("Aluno " + entidade.getNome() + " salvo na lista.");
     }
 
-    @Override // CORRIGIDO: Nome do método para 'buscarPorId' e retorno para 'Optional<Aluno>'
-    public Optional<Aluno> buscarPorId(String id) { // Não lança exceções diretamente
+    @Override
+    public Optional<Aluno> buscarPorId(String id) {
         System.out.println("Buscando aluno com matrícula: " + id);
-        // O método buscarPorId da interface IRepositorio não declara DadoInvalidoException
-        // Então, esta validação deve ser feita no serviço ou em outro lugar,
-        // ou o método deve simplesmente retornar Optional.empty() para IDs inválidos.
         if (id == null || id.trim().isEmpty()) {
-             // Retorna um Optional vazio para IDs inválidos, conforme a assinatura da interface
-            return Optional.empty(); 
+            return Optional.empty();
         }
         return this.alunos.stream()
                 .filter(a -> a.getMatricula().equals(id))
-                .findFirst(); // Retorna Optional<Aluno>
+                .findFirst();
     }
 
     @Override
@@ -62,14 +58,11 @@ public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
         }
 
         System.out.println("Atualizando aluno com matrícula: " + entidade.getMatricula());
-        // Encontra o índice do aluno existente
         Optional<Aluno> alunoExistenteOpt = buscarPorId(entidade.getMatricula());
         if (alunoExistenteOpt.isEmpty()) {
             throw new EntidadeNaoEncontradaException("Aluno com matrícula " + entidade.getMatricula() + " não encontrado para atualização.");
         }
-        
-        // Remove o antigo e adiciona o novo (atualizado)
-        // Uma forma mais eficiente seria encontrar o índice e substituir, mas removeIf e add funciona
+
         this.alunos.removeIf(a -> a.getMatricula().equals(entidade.getMatricula()));
         this.alunos.add(entidade);
     }

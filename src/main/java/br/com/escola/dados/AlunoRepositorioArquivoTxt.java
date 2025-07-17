@@ -7,7 +7,7 @@ import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional; // Adicionado: Importação para Optional
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AlunoRepositorioArquivoTxt implements IRepositorio<Aluno, String> {
@@ -29,7 +29,6 @@ public class AlunoRepositorioArquivoTxt implements IRepositorio<Aluno, String> {
     private void salvarNoArquivo(List<Aluno> alunos) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(NOME_ARQUIVO))) {
             for (Aluno aluno : alunos) {
-                // Formato: nome;cpf;telefone;email;matricula;anoLetivo
                 writer.write(aluno.getNome() + ";" +
                              aluno.getCpf() + ";" +
                              aluno.getTelefone() + ";" +
@@ -85,12 +84,12 @@ public class AlunoRepositorioArquivoTxt implements IRepositorio<Aluno, String> {
         salvarNoArquivo(alunos);
     }
 
-    @Override // Alterado: De 'buscar' para 'buscarPorId' e retorno para Optional<Aluno>
-    public Optional<Aluno> buscarPorId(String chave) { // Agora retorna Optional<Aluno>
+    @Override
+    public Optional<Aluno> buscarPorId(String chave) {
         List<Aluno> alunos = carregarDoArquivo();
         return alunos.stream()
                 .filter(a -> a.getMatricula().equals(chave))
-                .findFirst(); // Retorna Optional<Aluno>
+                .findFirst();
     }
 
     @Override

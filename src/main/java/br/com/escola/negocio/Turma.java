@@ -15,15 +15,13 @@ public class Turma implements Serializable {
     private List<Disciplina> disciplinas;
     private List<Aluno> alunosMatriculados;
 
-    // CONSTRUTOR PADRÃO ADICIONADO AQUI!
     public Turma() {
-        // Inicializa as listas para evitar NullPointerExceptions ao desserializar JSON vazio
         this.disciplinas = new ArrayList<>();
         this.alunosMatriculados = new ArrayList<>();
     }
 
     public Turma(String codigo, String nomeTurma, int anoLetivo, Professor professorCoordenador) {
-        this(); // Chama o construtor padrão para inicializar as listas
+        this();
         this.codigo = codigo;
         this.nomeTurma = nomeTurma;
         this.anoLetivo = anoLetivo;
@@ -66,7 +64,7 @@ public class Turma implements Serializable {
         return new ArrayList<>(disciplinas);
     }
 
-    public void setDisciplinas(List<Disciplina> disciplinas) { // Adicionado setter para Gson
+    public void setDisciplinas(List<Disciplina> disciplinas) {
         this.disciplinas = disciplinas != null ? new ArrayList<>(disciplinas) : new ArrayList<>();
     }
 
@@ -86,7 +84,7 @@ public class Turma implements Serializable {
         return new ArrayList<>(alunosMatriculados);
     }
 
-    public void setAlunosMatriculados(List<Aluno> alunosMatriculados) { // Adicionado setter para Gson
+    public void setAlunosMatriculados(List<Aluno> alunosMatriculados) {
         this.alunosMatriculados = alunosMatriculados != null ? new ArrayList<>(alunosMatriculados) : new ArrayList<>();
     }
 

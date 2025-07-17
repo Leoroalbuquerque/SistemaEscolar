@@ -1,6 +1,6 @@
 package br.com.escola.main;
 
-import br.com.escola.negocio.Fachada; // Usando a Fachada
+import br.com.escola.negocio.Fachada;
 import br.com.escola.negocio.Aluno;
 import br.com.escola.negocio.Professor;
 import br.com.escola.negocio.Disciplina;
@@ -17,10 +17,9 @@ public class SistemaEscolarTeste {
     public static void main(String[] args) {
         Fachada fachada = Fachada.getInstance();
 
-        // --- Testando CRUD de Alunos ---
         System.out.println("\n--- Testando CRUD de Alunos ---");
         try {
-            fachada.limparTodosOsDados(); // **Adicionado aqui para limpar os dados antes de cada bloco**
+            fachada.limparTodosOsDados();
 
             Aluno aluno1 = new Aluno("Joao", "123.456.789-00", "99999-8888", "joao@email.com", "2023001", 2023);
             Aluno aluno2 = new Aluno("Maria", "987.654.321-11", "98888-7777", "maria@email.com", "2023002", 2023);
@@ -67,10 +66,9 @@ public class SistemaEscolarTeste {
             System.err.println("Erro durante o teste de Aluno: " + e.getMessage());
         }
 
-        // --- Testando CRUD de Professores ---
         System.out.println("\n--- Testando CRUD de Professores ---");
         try {
-            fachada.limparTodosOsDados(); // **Adicionado aqui para limpar os dados antes de cada bloco**
+            fachada.limparTodosOsDados();
 
             Professor prof1 = new Professor("Carlos Lima", "111.222.333-44", "97777-6666", "carlos.l@escola.com", "PRO101", "Matemática", 5000.00);
             Professor prof2 = new Professor("Ana Souza", "222.333.444-55", "96666-5555", "ana.s@escola.com", "PRO102", "Português", 5200.00);
@@ -121,10 +119,9 @@ public class SistemaEscolarTeste {
             System.err.println("Erro durante o teste de Professor: " + e.getMessage());
         }
 
-        // --- Testando CRUD de Disciplinas ---
         System.out.println("\n--- Testando CRUD de Disciplinas ---");
         try {
-            fachada.limparTodosOsDados(); // **Adicionado aqui para limpar os dados antes de cada bloco**
+            fachada.limparTodosOsDados();
 
             Disciplina disc1 = new Disciplina("MAT001", "Matemática Fund.", 60);
             Disciplina disc2 = new Disciplina("POR001", "Português Avançado", 80);
@@ -171,12 +168,10 @@ public class SistemaEscolarTeste {
             System.err.println("Erro durante o teste de Disciplina: " + e.getMessage());
         }
 
-        // --- Testando CRUD de Turmas ---
         System.out.println("\n--- Testando CRUD de Turmas ---");
         try {
-            fachada.limparTodosOsDados(); // **Adicionado aqui para limpar os dados antes de cada bloco**
+            fachada.limparTodosOsDados();
 
-            // Re-adiciona professor, disciplina e aluno para testes de turma
             Professor profParaTurma = new Professor("Carlos Lima", "111.222.333-44", "97777-6666", "carlos.l@escola.com", "PRO101", "Matemática", 5000.00);
             fachada.adicionarProfessor(profParaTurma);
             
@@ -245,10 +240,9 @@ public class SistemaEscolarTeste {
             System.err.println("Erro durante o teste de Turma: " + e.getMessage());
         }
 
-        // --- Testando CRUD de Funcionários ---
         System.out.println("\n--- Testando CRUD de Funcionários ---");
         try {
-            fachada.limparTodosOsDados(); // **Adicionado aqui para limpar os dados antes de cada bloco**
+            fachada.limparTodosOsDados();
 
             Funcionario func1 = new Funcionario("Maria Silva", "789.012.345-67", "98765-4321", "maria.s@escola.com", "Secretária", "SEC0001", 3000.00);
             Funcionario func2 = new Funcionario("João Santos", "123.456.789-01", "12345-6789", "joao.s@escola.com", "Administrador", "ADM0001", 4500.00);
@@ -307,12 +301,10 @@ public class SistemaEscolarTeste {
         }
         System.out.println("--- Fim do Teste de Funcionários ---\n");
 
-        // --- Testando CRUD de Responsáveis e sua Associação com Alunos ---
         System.out.println("\n--- Testando CRUD de Responsáveis e Associação com Alunos ---");
         try {
-            fachada.limparTodosOsDados(); // **Adicionado aqui para limpar os dados antes de cada bloco**
+            fachada.limparTodosOsDados();
 
-            // 1. Adicionar Responsáveis
             Responsavel resp1 = new Responsavel("Carlos Pai", "111.111.111-11", "91111-1111", "carlos.pai@email.com", "Pai", "111.111.111-11", true);
             Responsavel resp2 = new Responsavel("Ana Mae", "222.222.222-22", "92222-2222", "ana.mae@email.com", "Mãe", "222.222.222-22", true);
             Responsavel resp3 = new Responsavel("Joana Tia", "333.333.333-33", "93333-3333", "joana.tia@email.com", "Tia", "333.333.333-33", false);
@@ -322,32 +314,25 @@ public class SistemaEscolarTeste {
             fachada.adicionarResponsavel(resp3);
             System.out.println("Responsáveis adicionados com sucesso.");
 
-            // 2. Listar Todos os Responsáveis
             System.out.println("\n--- Lista de Responsáveis ---");
             List<Responsavel> responsaveis = fachada.listarTodosResponsaveis();
             responsaveis.forEach(System.out::println);
 
-            // 3. Buscar Responsável
             System.out.println("\n--- Buscando Responsável ---");
             Responsavel respEncontrado = fachada.buscarResponsavel("111.111.111-11");
             System.out.println("Responsável encontrado (111.111.111-11): " + respEncontrado.getNome());
 
-            // 4. Atualizar Responsável
             System.out.println("\n--- Atualizando Responsável ---");
             respEncontrado.setTelefone("91111-0000");
             fachada.atualizarResponsavel(respEncontrado);
             System.out.println("Responsável 111.111.111-11 atualizado para telefone: " + fachada.buscarResponsavel("111.111.111-11").getTelefone());
 
-            // 5. Buscar Responsáveis Principais
             System.out.println("\n--- Buscando Responsáveis Principais ---");
             List<Responsavel> responsaveisPrincipais = fachada.buscarResponsaveisPrincipais();
             responsaveisPrincipais.forEach(System.out::println);
 
-            // 6. Associar Responsáveis a um Aluno
             System.out.println("\n--- Associando Responsáveis a Aluno ---");
-            // Crie um aluno específico para este bloco de teste, já que os dados foram limpos
-            // AQUI ESTÁ A CORREÇÃO: "2023001RESP" foi alterado para "2023001" (ou qualquer outra matrícula numérica de 7 dígitos)
-            Aluno alunoJoaoParaResp = new Aluno("Joao Responsavel", "111.111.111-11", "99999-8888", "joao.resp@email.com", "2023001", 2023); 
+            Aluno alunoJoaoParaResp = new Aluno("Joao Responsavel", "111.111.111-11", "99999-8888", "joao.resp@email.com", "2023001", 2023);
             fachada.adicionarAluno(alunoJoaoParaResp);
 
             System.out.println("Aluno antes da associação: " + alunoJoaoParaResp);
@@ -356,18 +341,16 @@ public class SistemaEscolarTeste {
             fachada.adicionarResponsavelAoAluno(alunoJoaoParaResp.getMatricula(), "222.222.222-22");
             System.out.println("Responsáveis 111.111.111-11 e 222.222.222-22 associados ao aluno 2023001.");
             
-            Aluno alunoJoaoAtualizado = fachada.buscarAluno("2023001"); // Buscar com a matrícula corrigida
+            Aluno alunoJoaoAtualizado = fachada.buscarAluno("2023001");
             System.out.println("Aluno após associação: " + alunoJoaoAtualizado);
 
-            // 7. Remover Responsável de um Aluno
             System.out.println("\n--- Removendo Responsável de Aluno ---");
             fachada.removerResponsavelDoAluno(alunoJoaoAtualizado.getMatricula(), "111.111.111-11");
             System.out.println("Responsável 111.111.111-11 removido do aluno 2023001.");
 
-            Aluno alunoJoaoFinal = fachada.buscarAluno("2023001"); // Buscar com a matrícula corrigida
+            Aluno alunoJoaoFinal = fachada.buscarAluno("2023001");
             System.out.println("Aluno após remoção: " + alunoJoaoFinal);
 
-            // 8. Deletar Responsável
             System.out.println("\n--- Deletando Responsável ---");
             boolean respDeletado = fachada.deletarResponsavel("333.333.333-33");
             if (respDeletado) {
@@ -376,7 +359,6 @@ public class SistemaEscolarTeste {
                 System.out.println("Falha ao deletar Responsável 333.333.333-33.");
             }
 
-            // 9. Listar Todos os Responsáveis Novamente para confirmar deleção
             System.out.println("\n--- Lista de Responsáveis após deleção ---");
             responsaveis = fachada.listarTodosResponsaveis();
             if (responsaveis.isEmpty()) {
@@ -385,7 +367,6 @@ public class SistemaEscolarTeste {
                 responsaveis.forEach(System.out::println);
             }
 
-            // Teste de cenário de erro: adicionar responsável com CPF duplicado
             System.out.println("\n--- Tentando adicionar responsável com CPF duplicado ---");
             try {
                 fachada.adicionarResponsavel(new Responsavel("Carlos Duplicado", "111.111.111-11", "91111-1111", "carlos.duplicado@email.com", "Pai", "111.111.111-11", true));
@@ -393,18 +374,16 @@ public class SistemaEscolarTeste {
                 System.out.println("Erro esperado ao adicionar responsável duplicado: " + e.getMessage());
             }
 
-            // Teste de cenário de erro: associar responsável inexistente a aluno
             System.out.println("\n--- Tentando associar responsável inexistente a aluno ---");
             try {
                 fachada.adicionarResponsavelAoAluno(alunoJoaoAtualizado.getMatricula(), "999.999.999-99");
-            } catch (EntidadeNaoEncontradaException e) { 
+            } catch (EntidadeNaoEncontradaException e) {
                 System.out.println("Erro esperado ao associar responsável inexistente: " + e.getMessage());
             }
 
-            // Teste de cenário de erro: remover responsável não associado de aluno
             System.out.println("\n--- Tentando remover responsável não associado de aluno ---");
             try {
-                fachada.removerResponsavelDoAluno(alunoJoaoAtualizado.getMatricula(), "111.111.111-11"); // Já foi removido
+                fachada.removerResponsavelDoAluno(alunoJoaoAtualizado.getMatricula(), "111.111.111-11");
             } catch (EntidadeNaoEncontradaException e) {
                 System.out.println("Erro esperado ao remover responsável não associado: " + e.getMessage());
             }

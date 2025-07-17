@@ -5,7 +5,7 @@ import br.com.escola.dados.DisciplinaRepositorioJson;
 import br.com.escola.dados.ProfessorRepositorioJson;
 import br.com.escola.dados.TurmaRepositorioJson;
 import br.com.escola.dados.FuncionarioRepositorioJson;
-import br.com.escola.dados.ResponsavelRepositorioJson; // Nova importação
+import br.com.escola.dados.ResponsavelRepositorioJson;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 
@@ -13,15 +13,14 @@ import java.util.List;
 
 public class Fachada {
 
-    private static Fachada instance; // Singleton instance
+    private static Fachada instance;
     private AlunoServico alunoServico;
     private ProfessorServico professorServico;
     private DisciplinaServico disciplinaServico;
     private TurmaServico turmaServico;
     private FuncionarioServico funcionarioServico;
-    private ResponsavelServico responsavelServico; // Novo serviço
+    private ResponsavelServico responsavelServico;
 
-    // Adicione atributos privados para os repositórios aqui
     private AlunoRepositorioJson alunoRepositorio;
     private DisciplinaRepositorioJson disciplinaRepositorio;
     private ProfessorRepositorioJson professorRepositorio;
@@ -29,22 +28,18 @@ public class Fachada {
     private FuncionarioRepositorioJson funcionarioRepositorio;
     private ResponsavelRepositorioJson responsavelRepositorio;
 
-
     private Fachada() {
-        // Inicializa os repositórios (agora atribuindo aos atributos da classe)
         this.alunoRepositorio = new AlunoRepositorioJson();
         this.disciplinaRepositorio = new DisciplinaRepositorioJson();
         this.professorRepositorio = new ProfessorRepositorioJson();
         this.turmaRepositorio = new TurmaRepositorioJson();
         this.funcionarioRepositorio = new FuncionarioRepositorioJson();
-        this.responsavelRepositorio = new ResponsavelRepositorioJson(); // Novo repositório
+        this.responsavelRepositorio = new ResponsavelRepositorioJson();
 
-        // Inicializa os serviços (passando os repositórios para eles)
         this.responsavelServico = new ResponsavelServico(this.responsavelRepositorio);
         this.alunoServico = new AlunoServico(this.alunoRepositorio, this.responsavelServico);
         this.professorServico = new ProfessorServico(this.professorRepositorio);
         this.disciplinaServico = new DisciplinaServico(this.disciplinaRepositorio);
-        // TurmaServico precisa dos outros serviços
         this.turmaServico = new TurmaServico(this.turmaRepositorio, this.alunoServico, this.disciplinaServico, this.professorServico);
         this.funcionarioServico = new FuncionarioServico(this.funcionarioRepositorio);
     }
@@ -56,7 +51,6 @@ public class Fachada {
         return instance;
     }
 
-    // --- Métodos de Limpeza para Testes ---
     public void limparTodosOsDados() {
         this.alunoRepositorio.limpar();
         this.disciplinaRepositorio.limpar();
@@ -67,7 +61,6 @@ public class Fachada {
         System.out.println("DEBUG: Todos os arquivos JSON foram limpos.");
     }
 
-    // --- Métodos de Aluno ---
     public void adicionarAluno(Aluno aluno) throws DadoInvalidoException {
         alunoServico.adicionarAluno(aluno);
     }
@@ -100,7 +93,6 @@ public class Fachada {
         return alunoServico.buscarAlunosPorAnoLetivo(anoLetivo);
     }
 
-    // --- Métodos de Professor ---
     public void adicionarProfessor(Professor professor) throws DadoInvalidoException {
         professorServico.adicionarProfessor(professor);
     }
@@ -125,7 +117,6 @@ public class Fachada {
         return professorServico.buscarProfessoresPorEspecialidade(especialidade);
     }
 
-    // --- Métodos de Disciplina ---
     public void adicionarDisciplina(Disciplina disciplina) throws DadoInvalidoException {
         disciplinaServico.adicionarDisciplina(disciplina);
     }
@@ -146,7 +137,6 @@ public class Fachada {
         return disciplinaServico.listarTodasDisciplinas();
     }
 
-    // --- Métodos de Turma ---
     public void adicionarTurma(Turma turma) throws DadoInvalidoException, EntidadeNaoEncontradaException {
         turmaServico.adicionarTurma(turma);
     }
@@ -183,7 +173,6 @@ public class Fachada {
         turmaServico.desmatricularAlunoDaTurma(codigoTurma, matriculaAluno);
     }
 
-    // --- Métodos de Funcionário ---
     public void adicionarFuncionario(Funcionario funcionario) throws DadoInvalidoException {
         funcionarioServico.adicionarFuncionario(funcionario);
     }
@@ -208,7 +197,6 @@ public class Fachada {
         return funcionarioServico.buscarFuncionariosPorCargo(cargo);
     }
 
-    // --- Novos Métodos de Responsável ---
     public void adicionarResponsavel(Responsavel responsavel) throws DadoInvalidoException {
         responsavelServico.adicionarResponsavel(responsavel);
     }

@@ -23,7 +23,7 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
     public DisciplinaRepositorioJson() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        this.disciplinas = new ArrayList<>(); // Inicializa para garantir que não seja nulo antes de carregar
+        this.disciplinas = new ArrayList<>();
         carregarDisciplinasDoArquivo();
     }
 
@@ -35,7 +35,7 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
                 System.out.println("Disciplinas carregadas do arquivo: " + NOME_ARQUIVO);
             } catch (IOException e) {
                 System.err.println("Erro ao carregar disciplinas do arquivo JSON. Criando um novo arquivo se o conteúdo estiver inválido. Detalhes: " + e.getMessage());
-                this.disciplinas = new ArrayList<>(); // Garante que a lista não seja nula em caso de erro
+                this.disciplinas = new ArrayList<>();
             }
         } else {
             System.out.println("Arquivo " + NOME_ARQUIVO + " não encontrado ou vazio. Iniciando com lista vazia de disciplinas.");
@@ -118,12 +118,9 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
         return new ArrayList<>(this.disciplinas);
     }
 
-    /**
-     * Limpa todos os dados de disciplinas do repositório e persiste a lista vazia no arquivo JSON.
-     */
     public void limpar() {
-        this.disciplinas.clear(); // Limpa a lista em memória
-        salvarDisciplinasNoArquivo(); // Salva a lista vazia no arquivo
+        this.disciplinas.clear();
+        salvarDisciplinasNoArquivo();
         System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

@@ -5,7 +5,6 @@ import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 
 import java.util.List;
-import java.util.Optional; // Importação necessária para Optional
 import java.util.stream.Collectors;
 
 public class FuncionarioServico {
@@ -26,16 +25,12 @@ public class FuncionarioServico {
         if (funcionario.getNome() == null || funcionario.getNome().trim().isEmpty()) {
             throw new DadoInvalidoException("Nome do funcionário é obrigatório.");
         }
-        // Exemplo de validação de negócio: garantir que a matrícula tenha um formato específico
         if (!funcionario.getMatriculaFuncional().matches("[A-Z]{3}\\d{4}")) {
             throw new DadoInvalidoException("Formato da matrícula funcional inválido. Esperado XXX9999 (ex: SEC1234).");
         }
-
-        // CORRIGIDO: Verifica se já existe um funcionário com a mesma matrícula
         if (funcionarioRepositorio.buscarPorId(funcionario.getMatriculaFuncional()).isPresent()) {
             throw new DadoInvalidoException("Já existe um funcionário cadastrado com a matrícula: " + funcionario.getMatriculaFuncional());
         }
-
         funcionarioRepositorio.adicionar(funcionario);
     }
 
@@ -43,7 +38,6 @@ public class FuncionarioServico {
         if (matriculaFuncional == null || matriculaFuncional.trim().isEmpty()) {
             throw new DadoInvalidoException("Matrícula funcional para busca não pode ser nula ou vazia.");
         }
-        // CORRIGIDO: Usa buscarPorId do repositório que retorna Optional
         return funcionarioRepositorio.buscarPorId(matriculaFuncional)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Funcionário com matrícula " + matriculaFuncional + " não encontrado."));
     }
@@ -61,12 +55,9 @@ public class FuncionarioServico {
         if (!funcionario.getMatriculaFuncional().matches("[A-Z]{3}\\d{4}")) {
             throw new DadoInvalidoException("Formato da matrícula funcional inválido. Esperado XXX9999 (ex: SEC1234).");
         }
-
-        // CORRIGIDO: Verifica se o funcionário a ser atualizado realmente existe
         if (funcionarioRepositorio.buscarPorId(funcionario.getMatriculaFuncional()).isEmpty()) {
             throw new EntidadeNaoEncontradaException("Funcionário com matrícula " + funcionario.getMatriculaFuncional() + " não encontrado para atualização.");
         }
-
         funcionarioRepositorio.atualizar(funcionario);
     }
 
@@ -74,15 +65,13 @@ public class FuncionarioServico {
         if (matriculaFuncional == null || matriculaFuncional.trim().isEmpty()) {
             throw new DadoInvalidoException("Matrícula funcional para deleção não pode ser nula ou vazia.");
         }
-        // O repositório já lança EntidadeNaoEncontradaException, então podemos chamar diretamente
         return funcionarioRepositorio.deletar(matriculaFuncional);
     }
 
     public List<Funcionario> listarTodosFuncionarios() {
         return funcionarioRepositorio.listarTodos();
     }
-    
-    // Método de exemplo para buscar por cargo, mostrando uma lógica de negócio adicional
+
     public List<Funcionario> buscarFuncionariosPorCargo(String cargo) throws DadoInvalidoException {
         if (cargo == null || cargo.trim().isEmpty()) {
             throw new DadoInvalidoException("Cargo para busca não pode ser nulo ou vazio.");

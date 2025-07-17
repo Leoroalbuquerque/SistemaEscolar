@@ -10,21 +10,20 @@ public class Aluno extends Pessoa implements Serializable {
 
     private String matricula;
     private int anoLetivo;
-    private List<String> cpfsResponsaveis; // Lista de CPFs dos responsáveis
+    private List<String> cpfsResponsaveis;
 
     public Aluno() {
         super();
-        this.cpfsResponsaveis = new ArrayList<>(); // Inicializa a lista
+        this.cpfsResponsaveis = new ArrayList<>();
     }
 
     public Aluno(String nome, String cpf, String telefone, String email, String matricula, int anoLetivo) {
         super(nome, cpf, telefone, email);
         this.matricula = matricula;
         this.anoLetivo = anoLetivo;
-        this.cpfsResponsaveis = new ArrayList<>(); // Inicializa a lista
+        this.cpfsResponsaveis = new ArrayList<>();
     }
 
-    // Construtor com responsáveis (opcional, mas útil para testes ou inicialização)
     public Aluno(String nome, String cpf, String telefone, String email, String matricula, int anoLetivo, List<String> cpfsResponsaveis) {
         super(nome, cpf, telefone, email);
         this.matricula = matricula;
@@ -56,7 +55,6 @@ public class Aluno extends Pessoa implements Serializable {
         this.cpfsResponsaveis = cpfsResponsaveis != null ? new ArrayList<>(cpfsResponsaveis) : new ArrayList<>();
     }
 
-    // Métodos para adicionar e remover responsáveis individualmente
     public void adicionarResponsavel(String cpfResponsavel) {
         if (cpfResponsavel != null && !cpfResponsavel.trim().isEmpty() && !this.cpfsResponsaveis.contains(cpfResponsavel)) {
             this.cpfsResponsaveis.add(cpfResponsavel);
@@ -89,7 +87,7 @@ public class Aluno extends Pessoa implements Serializable {
                "nome='" + getNome() + '\'' +
                ", matricula='" + matricula + '\'' +
                ", anoLetivo=" + anoLetivo +
-               ", cpfsResponsaveis=" + cpfsResponsaveis + // Inclui a lista de CPFs
+               ", cpfsResponsaveis=" + cpfsResponsaveis +
                '}';
     }
 }

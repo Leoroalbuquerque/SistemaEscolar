@@ -5,7 +5,7 @@ import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 
 import java.util.List;
-import java.util.Optional; // Importação necessária para Optional
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ProfessorServico {
@@ -30,7 +30,6 @@ public class ProfessorServico {
             throw new DadoInvalidoException("Formato do registro funcional inválido. Esperado XXX999 (ex: PRO123).");
         }
 
-        // CORRIGIDO: Usa buscarPorId e Optional para verificar existência
         if (professorRepositorio.buscarPorId(professor.getRegistroFuncional()).isPresent()) {
             throw new DadoInvalidoException("Já existe um professor com o registro funcional: " + professor.getRegistroFuncional());
         }
@@ -42,7 +41,6 @@ public class ProfessorServico {
         if (registroFuncional == null || registroFuncional.trim().isEmpty()) {
             throw new DadoInvalidoException("Registro funcional para busca não pode ser nulo ou vazio.");
         }
-        // CORRIGIDO: Usa buscarPorId do repositório que retorna Optional
         return professorRepositorio.buscarPorId(registroFuncional)
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Professor com registro " + registroFuncional + " não encontrado."));
     }
@@ -61,7 +59,6 @@ public class ProfessorServico {
             throw new DadoInvalidoException("Formato do registro funcional inválido. Esperado XXX999 (ex: PRO123).");
         }
 
-        // CORRIGIDO: Verifica se o professor a ser atualizado realmente existe
         if (professorRepositorio.buscarPorId(professor.getRegistroFuncional()).isEmpty()) {
             throw new EntidadeNaoEncontradaException("Professor com registro " + professor.getRegistroFuncional() + " não encontrado para atualização.");
         }
@@ -73,7 +70,6 @@ public class ProfessorServico {
         if (registroFuncional == null || registroFuncional.trim().isEmpty()) {
             throw new DadoInvalidoException("Registro funcional para deleção não pode ser nulo ou vazio.");
         }
-        // O repositório já lança EntidadeNaoEncontradaException, então podemos chamar diretamente
         return professorRepositorio.deletar(registroFuncional);
     }
 

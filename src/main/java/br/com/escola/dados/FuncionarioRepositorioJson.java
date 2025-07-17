@@ -22,7 +22,7 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
     public FuncionarioRepositorioJson() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        this.funcionarios = new ArrayList<>(); // Inicializa para garantir que não seja nulo antes de carregar
+        this.funcionarios = new ArrayList<>();
         carregarFuncionariosDoArquivo();
     }
 
@@ -33,7 +33,7 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
                 this.funcionarios = objectMapper.readValue(arquivo, new TypeReference<List<Funcionario>>() {});
             } catch (IOException e) {
                 System.err.println("Erro ao carregar funcionários do arquivo JSON. Detalhes: " + e.getMessage());
-                this.funcionarios = new ArrayList<>(); // Inicia lista vazia em caso de erro de leitura
+                this.funcionarios = new ArrayList<>();
             }
         } else {
             System.out.println("Arquivo " + NOME_ARQUIVO + " não encontrado ou vazio. Iniciando com lista vazia de funcionários.");
@@ -116,12 +116,9 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
         return new ArrayList<>(this.funcionarios);
     }
 
-    /**
-     * Limpa todos os dados de funcionários do repositório e persiste a lista vazia no arquivo JSON.
-     */
     public void limpar() {
-        this.funcionarios.clear(); // Limpa a lista em memória
-        salvarFuncionariosNoArquivo(); // Salva a lista vazia no arquivo
+        this.funcionarios.clear();
+        salvarFuncionariosNoArquivo();
         System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

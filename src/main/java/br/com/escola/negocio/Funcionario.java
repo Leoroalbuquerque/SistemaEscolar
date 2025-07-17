@@ -11,12 +11,12 @@ public class Funcionario extends Pessoa implements Serializable {
     private double salario;
 
     public Funcionario() {
-        super(); // Chama o construtor padrão de Pessoa
+        super();
     }
 
     public Funcionario(String nome, String cpf, String telefone, String email, 
                        String cargo, String matriculaFuncional, double salario) {
-        super(nome, cpf, telefone, email); // Chama o construtor completo de Pessoa
+        super(nome, cpf, telefone, email);
         this.cargo = cargo;
         this.matriculaFuncional = matriculaFuncional;
         this.salario = salario;
@@ -50,7 +50,7 @@ public class Funcionario extends Pessoa implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false; 
+        if (!super.equals(o)) return false;
         Funcionario that = (Funcionario) o;
         return Objects.equals(matriculaFuncional, that.matriculaFuncional);
     }
