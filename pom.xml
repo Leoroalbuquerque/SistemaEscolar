@@ -9,35 +9,22 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.release>22</maven.compiler.release> 
-        
-        <exec.mainClass>br.com.escola.main.SistemaEscolarTeste</exec.mainClass> 
-        
+        <maven.compiler.release>24</maven.compiler.release>
+        <exec.mainClass>br.com.escola.main.SistemaEscolarTeste</exec.mainClass>
         <jackson.version>2.17.2</jackson.version>
         <gson.version>2.10.1</gson.version>
         <junit.jupiter.version>5.10.0</junit.jupiter.version>
-        <junit.platform.runner.version>1.10.0</junit.platform.runner.version> 
-        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version> 
+        <junit.platform.runner.version>1.10.0</junit.platform.runner.version>
+        <mockito.version>5.11.0</mockito.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
-    </properties>
+        <pdfbox.version>2.0.29</pdfbox.version> </properties>
+
+    <repositories>
+        </repositories>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <release>${maven.compiler.release}</release>
-                    <source>${maven.compiler.release}</source>
-                    <target>${maven.compiler.release}</target>
-                    <testIncludes>
-                        <testInclude>**/*Teste.java</testInclude>
-                        <testInclude>**/*Tests.java</testInclude>
-                    </testIncludes>
-                </configuration>
-            </plugin>
-            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -53,6 +40,11 @@
                         <artifactId>junit-platform-runner</artifactId>
                         <version>${junit.platform.runner.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.mockito</groupId>
+                        <artifactId>mockito-junit-jupiter</artifactId>
+                        <version>${mockito.version}</version>
+                    </dependency>
                 </dependencies>
             </plugin>
 
@@ -65,6 +57,24 @@
                     <arguments>
                         <argument>-Dfile.encoding=UTF-8</argument>
                     </arguments>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                    <source>${maven.compiler.release}</source>
+                    <target>${maven.compiler.release}</target>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                    </compilerArgs>
+                    <testIncludes>
+                        <testInclude>**/*Teste.java</testInclude>
+                        <testInclude>**/*Tests.java</testInclude>
+                    </testIncludes>
                 </configuration>
             </plugin>
         </plugins>
@@ -86,6 +96,11 @@
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -94,16 +109,37 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>fontbox</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.20.0</version> 
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>
-            <scope>test</scope> 
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
-            <scope>test</scope> 
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
@@ -111,6 +147,17 @@
             <version>${junit.platform.runner.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
 </project>

@@ -31,7 +31,7 @@ public class FuncionarioServico {
         if (funcionarioRepositorio.buscarPorId(funcionario.getMatriculaFuncional()).isPresent()) {
             throw new DadoInvalidoException("Já existe um funcionário cadastrado com a matrícula: " + funcionario.getMatriculaFuncional());
         }
-        funcionarioRepositorio.adicionar(funcionario);
+        funcionarioRepositorio.salvar(funcionario);
     }
 
     public Funcionario buscarFuncionario(String matriculaFuncional) throws EntidadeNaoEncontradaException, DadoInvalidoException {

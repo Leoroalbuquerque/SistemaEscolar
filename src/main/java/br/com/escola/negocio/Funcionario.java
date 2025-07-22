@@ -2,12 +2,14 @@ package br.com.escola.negocio;
 
 import java.io.Serializable;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Funcionario extends Pessoa implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private String cargo;
     private String matriculaFuncional;
+    private String cargo;
     private double salario;
 
     public Funcionario() {
@@ -15,19 +17,11 @@ public class Funcionario extends Pessoa implements Serializable {
     }
 
     public Funcionario(String nome, String cpf, String telefone, String email, 
-                       String cargo, String matriculaFuncional, double salario) {
+                       String cargo, String matriculaFuncional, double salario) { 
         super(nome, cpf, telefone, email);
-        this.cargo = cargo;
         this.matriculaFuncional = matriculaFuncional;
-        this.salario = salario;
-    }
-
-    public String getCargo() {
-        return cargo;
-    }
-
-    public void setCargo(String cargo) {
         this.cargo = cargo;
+        this.salario = salario;
     }
 
     public String getMatriculaFuncional() {
@@ -36,6 +30,14 @@ public class Funcionario extends Pessoa implements Serializable {
 
     public void setMatriculaFuncional(String matriculaFuncional) {
         this.matriculaFuncional = matriculaFuncional;
+    }
+
+    public String getCargo() {
+        return cargo;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
     }
 
     public double getSalario() {
@@ -63,9 +65,42 @@ public class Funcionario extends Pessoa implements Serializable {
     @Override
     public String toString() {
         return "Funcionario{" +
-               "nome='" + getNome() + '\'' +
-               ", matriculaFuncional='" + matriculaFuncional + '\'' +
-               ", cargo='" + cargo + '\'' +
-               '}';
+                "nome='" + getNome() + '\'' +
+                ", matriculaFuncional='" + matriculaFuncional + '\'' +
+                ", cargo='" + cargo + '\'' +
+                ", salario=" + salario +
+                '}';
+    }
+
+    public String toLine() {
+        return getNome() + "|" + getCpf() + "|" + getTelefone() + "|" + getEmail() + "|" +
+               matriculaFuncional + "|" + cargo + "|" + salario;
+    }
+
+    public static Funcionario fromLine(String line) {
+        if (line == null || line.trim().isEmpty()) {
+            return null;
+        }
+        String[] parts = line.split("\\|");
+        if (parts.length < 7) {
+            System.err.println("Linha mal formatada para Funcionario: " + line);
+            return null;
+        }
+        try {
+            String nome = parts[0];
+            String cpf = parts[1];
+            String telefone = parts[2];
+            String email = parts[3];
+            String matriculaFuncional = parts[4];
+            String cargo = parts[5];
+            double salario = Double.parseDouble(parts[6]);
+            return new Funcionario(nome, cpf, telefone, email, matriculaFuncional, cargo, salario);
+        } catch (NumberFormatException e) {
+            System.err.println("Erro de formato numérico ao parsear salário em Funcionario: " + line + " - " + e.getMessage());
+            return null;
+        } catch (Exception e) {
+            System.err.println("Erro ao parsear linha para Funcionario: " + line + " - " + e.getMessage());
+            return null;
+        }
     }
 }

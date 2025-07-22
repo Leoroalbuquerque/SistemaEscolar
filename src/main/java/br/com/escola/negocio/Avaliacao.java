@@ -1,35 +1,61 @@
 package br.com.escola.negocio;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-public class Avaliacao {
-    private String nome;
-    private Date data;
-    private Date prazoNotas;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Avaliacao implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private String id;
+    private String nomeAvaliacao;
+    private LocalDate dataInicio;
+    private LocalDate dataFim;
     private Disciplina disciplina;
 
-    public String getNome() {
-        return nome;
+    public Avaliacao() {
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public Avaliacao(String id, String nomeAvaliacao, LocalDate dataInicio, LocalDate dataFim, Disciplina disciplina) {
+        this.id = id;
+        this.nomeAvaliacao = nomeAvaliacao;
+        this.dataInicio = dataInicio;
+        this.dataFim = dataFim;
+        this.disciplina = disciplina;
     }
 
-    public Date getData() {
-        return data;
+    public String getId() {
+        return id;
     }
 
-    public void setData(Date data) {
-        this.data = data;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public Date getPrazoNotas() {
-        return prazoNotas;
+    public String getNomeAvaliacao() {
+        return nomeAvaliacao;
     }
 
-    public void setPrazoNotas(Date prazoNotas) {
-        this.prazoNotas = prazoNotas;
+    public void setNomeAvaliacao(String nomeAvaliacao) {
+        this.nomeAvaliacao = nomeAvaliacao;
+    }
+
+    public LocalDate getDataInicio() {
+        return dataInicio;
+    }
+
+    public void setDataInicio(LocalDate dataInicio) {
+        this.dataInicio = dataInicio;
+    }
+
+    public LocalDate getDataFim() {
+        return dataFim;
+    }
+
+    public void setDataFim(LocalDate dataFim) {
+        this.dataFim = dataFim;
     }
 
     public Disciplina getDisciplina() {
@@ -38,5 +64,23 @@ public class Avaliacao {
 
     public void setDisciplina(Disciplina disciplina) {
         this.disciplina = disciplina;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Avaliacao avaliacao = (Avaliacao) o;
+        return Objects.equals(id, avaliacao.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return nomeAvaliacao + " (ID: " + id + ")";
     }
 }

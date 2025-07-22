@@ -13,18 +13,18 @@ public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
     private List<Aluno> alunos = new ArrayList<>();
 
     @Override
-    public void adicionar(Aluno entidade) throws DadoInvalidoException {
+    public void salvar(Aluno entidade) throws DadoInvalidoException {
         if (entidade == null || entidade.getMatricula() == null || entidade.getMatricula().trim().isEmpty()) {
-            throw new DadoInvalidoException("Erro: Tentativa de adicionar aluno nulo ou com matrícula vazia/nula.");
+            throw new DadoInvalidoException("Erro: Tentativa de salvar aluno nulo ou com matrícula vazia/nula.");
         }
         if (entidade.getNome() == null || entidade.getNome().trim().isEmpty()) {
-            throw new DadoInvalidoException("Erro: Nome do aluno é obrigatório para adição.");
+            throw new DadoInvalidoException("Erro: Nome do aluno é obrigatório para salvar.");
         }
 
         boolean existe = this.alunos.stream()
                 .anyMatch(a -> a != null && a.getMatricula() != null && a.getMatricula().equals(entidade.getMatricula()));
         if (existe) {
-            throw new DadoInvalidoException("Aluno com matrícula " + entidade.getMatricula() + " já existe na memória. Não foi salvo novamente.");
+            throw new DadoInvalidoException("Aluno com matrícula " + entidade.getMatricula() + " já existe na memória. Não foi salvo novamente (use 'atualizar' para modificar).");
         }
 
         this.alunos.add(entidade);
@@ -65,6 +65,7 @@ public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
 
         this.alunos.removeIf(a -> a.getMatricula().equals(entidade.getMatricula()));
         this.alunos.add(entidade);
+        System.out.println("Aluno " + entidade.getNome() + " atualizado com sucesso na lista.");
     }
 
     @Override
@@ -72,12 +73,19 @@ public class AlunoRepositorioMemoria implements IRepositorio<Aluno, String> {
         if (id == null || id.trim().isEmpty()) {
             throw new DadoInvalidoException("Matrícula para deleção não pode ser nula ou vazia.");
         }
-        System.out.println("Deletando aluno com matrícula: " + id);
+        System.out.println("Tentando deletar aluno com matrícula: " + id);
         boolean removido = this.alunos.removeIf(aluno -> aluno.getMatricula().equals(id));
         if (removido) {
+            System.out.println("Aluno com matrícula " + id + " deletado com sucesso.");
             return true;
         } else {
             throw new EntidadeNaoEncontradaException("Aluno com matrícula " + id + " não encontrado para exclusão.");
         }
+    }
+
+    @Override
+    public void limpar() {
+        System.out.println("Limpando todos os alunos do repositório em memória.");
+        this.alunos.clear();
     }
 }

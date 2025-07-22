@@ -28,7 +28,8 @@ public class DisciplinaServico {
         if (disciplinaRepositorio.buscarPorId(disciplina.getCodigo()).isPresent()) {
             throw new DadoInvalidoException("Já existe uma disciplina com o código: " + disciplina.getCodigo());
         }
-        disciplinaRepositorio.adicionar(disciplina);
+
+        disciplinaRepositorio.salvar(disciplina);
     }
 
     public Disciplina buscarDisciplina(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException {

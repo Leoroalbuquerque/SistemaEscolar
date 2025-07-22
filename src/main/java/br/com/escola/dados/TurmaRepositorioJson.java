@@ -3,9 +3,11 @@ package br.com.escola.dados;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import br.com.escola.negocio.Turma;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +26,9 @@ public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
 
     public TurmaRepositorioJson() {
         objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT); // Formata o JSON para ser legível
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.registerModule(new JavaTimeModule());
         carregarDados();
     }
 
@@ -52,9 +56,9 @@ public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
     }
 
     @Override
-    public void adicionar(Turma entidade) throws DadoInvalidoException {
+    public void salvar(Turma entidade) throws DadoInvalidoException {
         if (entidade == null || entidade.getCodigo() == null || entidade.getCodigo().trim().isEmpty()) {
-            throw new DadoInvalidoException("Turma ou código da turma não pode ser nulo.");
+            throw new DadoInvalidoException("Turma ou código da turma não pode ser nulo ou vazio.");
         }
         boolean existe = turmas.stream()
                 .anyMatch(t -> t.getCodigo().equals(entidade.getCodigo()));
@@ -116,6 +120,7 @@ public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
         return new ArrayList<>(turmas);
     }
 
+    @Override
     public void limpar() {
         this.turmas.clear();
         salvarDados();

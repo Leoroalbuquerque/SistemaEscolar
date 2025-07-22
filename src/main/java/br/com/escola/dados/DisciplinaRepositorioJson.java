@@ -3,6 +3,7 @@ package br.com.escola.dados;
 import br.com.escola.negocio.Disciplina;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,6 +24,7 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
     public DisciplinaRepositorioJson() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.disciplinas = new ArrayList<>();
         carregarDisciplinasDoArquivo();
     }
@@ -36,9 +38,11 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
             } catch (IOException e) {
                 System.err.println("Erro ao carregar disciplinas do arquivo JSON. Criando um novo arquivo se o conteúdo estiver inválido. Detalhes: " + e.getMessage());
                 this.disciplinas = new ArrayList<>();
+                salvarDisciplinasNoArquivo();
             }
         } else {
             System.out.println("Arquivo " + NOME_ARQUIVO + " não encontrado ou vazio. Iniciando com lista vazia de disciplinas.");
+            salvarDisciplinasNoArquivo();
         }
     }
 
@@ -52,18 +56,18 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
     }
 
     @Override
-    public void adicionar(Disciplina entidade) throws DadoInvalidoException {
+    public void salvar(Disciplina entidade) throws DadoInvalidoException {
         if (entidade == null || entidade.getCodigo() == null || entidade.getCodigo().trim().isEmpty()) {
-            throw new DadoInvalidoException("Erro: Tentativa de adicionar disciplina nula ou com código vazio/nulo.");
+            throw new DadoInvalidoException("Erro: Tentativa de salvar disciplina nula ou com código vazio/nulo.");
         }
         if (entidade.getNome() == null || entidade.getNome().trim().isEmpty()) {
-            throw new DadoInvalidoException("Erro: Nome da disciplina é obrigatório para adição.");
+            throw new DadoInvalidoException("Erro: Nome da disciplina é obrigatório para salvar.");
         }
 
         boolean existe = this.disciplinas.stream()
                 .anyMatch(d -> d != null && d.getCodigo() != null && d.getCodigo().equals(entidade.getCodigo()));
         if (existe) {
-            throw new DadoInvalidoException("Já existe uma disciplina cadastrada com o código: " + entidade.getCodigo());
+            throw new DadoInvalidoException("Já existe uma disciplina cadastrada com o código: " + entidade.getCodigo() + ". Use o método 'atualizar' para modificar.");
         }
 
         this.disciplinas.add(entidade);
@@ -118,6 +122,7 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
         return new ArrayList<>(this.disciplinas);
     }
 
+    @Override
     public void limpar() {
         this.disciplinas.clear();
         salvarDisciplinasNoArquivo();

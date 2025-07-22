@@ -4,6 +4,7 @@ import br.com.escola.dados.IRepositorio;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 
+import java.io.IOException;
 import java.util.List;
 
 public class TurmaServico {
@@ -17,13 +18,16 @@ public class TurmaServico {
                         AlunoServico alunoServico,
                         DisciplinaServico disciplinaServico,
                         ProfessorServico professorServico) {
+        if (turmaRepositorio == null || alunoServico == null || disciplinaServico == null || professorServico == null) {
+            throw new IllegalArgumentException("Todos os serviços e repositórios devem ser fornecidos e não podem ser nulos.");
+        }
         this.turmaRepositorio = turmaRepositorio;
         this.alunoServico = alunoServico;
         this.disciplinaServico = disciplinaServico;
         this.professorServico = professorServico;
     }
 
-    public void adicionarTurma(Turma turma) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void adicionarTurma(Turma turma) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         if (turma == null) {
             throw new DadoInvalidoException("Turma não pode ser nula.");
         }
@@ -34,28 +38,28 @@ public class TurmaServico {
             throw new DadoInvalidoException("Nome da turma é obrigatório.");
         }
 
-        if (turma.getProfessorCoordenador() == null ||
-            turma.getProfessorCoordenador().getRegistroFuncional() == null ||
-            turma.getProfessorCoordenador().getRegistroFuncional().trim().isEmpty()) {
-            throw new DadoInvalidoException("Professor coordenador da turma é obrigatório.");
+        if (turma.getProfessorResponsavel() == null ||
+            turma.getProfessorResponsavel().getRegistroFuncional() == null ||
+            turma.getProfessorResponsavel().getRegistroFuncional().trim().isEmpty()) {
+            throw new DadoInvalidoException("Professor responsável da turma é obrigatório.");
         }
 
         try {
-            professorServico.buscarProfessor(turma.getProfessorCoordenador().getRegistroFuncional());
+            professorServico.buscarProfessor(turma.getProfessorResponsavel().getRegistroFuncional());
         } catch (EntidadeNaoEncontradaException e) {
-            throw new EntidadeNaoEncontradaException("Professor coordenador com registro " + turma.getProfessorCoordenador().getRegistroFuncional() + " não encontrado para associar à turma.");
+            throw new EntidadeNaoEncontradaException("Professor responsável com registro " + turma.getProfessorResponsavel().getRegistroFuncional() + " não encontrado para associar à turma.");
         } catch (DadoInvalidoException e) {
-            throw new DadoInvalidoException("Erro na validação do registro funcional do professor coordenador: " + e.getMessage());
+            throw new DadoInvalidoException("Erro na validação do registro funcional do professor responsável: " + e.getMessage());
         }
 
         if (turmaRepositorio.buscarPorId(turma.getCodigo()).isPresent()) {
             throw new DadoInvalidoException("Já existe uma turma com o código: " + turma.getCodigo());
         }
 
-        turmaRepositorio.adicionar(turma);
+        turmaRepositorio.salvar(turma);
     }
 
-    public Turma buscarTurma(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public Turma buscarTurma(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (codigo == null || codigo.trim().isEmpty()) {
             throw new DadoInvalidoException("Código para busca da turma não pode ser nulo ou vazio.");
         }
@@ -63,7 +67,7 @@ public class TurmaServico {
                 .orElseThrow(() -> new EntidadeNaoEncontradaException("Turma com código " + codigo + " não encontrada."));
     }
 
-    public void atualizarTurma(Turma turma) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizarTurma(Turma turma) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         if (turma == null) {
             throw new DadoInvalidoException("Turma não pode ser nula para atualização.");
         }
@@ -74,18 +78,18 @@ public class TurmaServico {
             throw new DadoInvalidoException("Nome da turma é obrigatório para atualização.");
         }
 
-        if (turma.getProfessorCoordenador() == null ||
-            turma.getProfessorCoordenador().getRegistroFuncional() == null ||
-            turma.getProfessorCoordenador().getRegistroFuncional().trim().isEmpty()) {
-            throw new DadoInvalidoException("Professor coordenador da turma é obrigatório para atualização.");
+        if (turma.getProfessorResponsavel() == null ||
+            turma.getProfessorResponsavel().getRegistroFuncional() == null ||
+            turma.getProfessorResponsavel().getRegistroFuncional().trim().isEmpty()) {
+            throw new DadoInvalidoException("Professor responsável da turma é obrigatório para atualização.");
         }
 
         try {
-            professorServico.buscarProfessor(turma.getProfessorCoordenador().getRegistroFuncional());
+            professorServico.buscarProfessor(turma.getProfessorResponsavel().getRegistroFuncional());
         } catch (EntidadeNaoEncontradaException e) {
-            throw new EntidadeNaoEncontradaException("Professor coordenador com registro " + turma.getProfessorCoordenador().getRegistroFuncional() + " não encontrado para atualização da turma.");
+            throw new EntidadeNaoEncontradaException("Professor responsável com registro " + turma.getProfessorResponsavel().getRegistroFuncional() + " não encontrado para atualização da turma.");
         } catch (DadoInvalidoException e) {
-            throw new DadoInvalidoException("Erro na validação do registro funcional do professor coordenador para atualização: " + e.getMessage());
+            throw new DadoInvalidoException("Erro na validação do registro funcional do professor responsável para atualização: " + e.getMessage());
         }
 
         if (turmaRepositorio.buscarPorId(turma.getCodigo()).isEmpty()) {
@@ -95,56 +99,21 @@ public class TurmaServico {
         turmaRepositorio.atualizar(turma);
     }
 
-    public boolean deletarTurma(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public boolean deletarTurma(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (codigo == null || codigo.trim().isEmpty()) {
             throw new DadoInvalidoException("Código para deleção da turma não pode ser nulo ou vazio.");
+        }
+        if (turmaRepositorio.buscarPorId(codigo).isEmpty()) {
+            throw new EntidadeNaoEncontradaException("Turma com código " + codigo + " não encontrada para deleção.");
         }
         return turmaRepositorio.deletar(codigo);
     }
 
-    public List<Turma> listarTodasTurmas() {
+    public List<Turma> listarTodasTurmas() throws IOException {
         return turmaRepositorio.listarTodos();
     }
 
-    public void adicionarDisciplinaNaTurma(String codigoTurma, String codigoDisciplina) throws DadoInvalidoException, EntidadeNaoEncontradaException {
-        if (codigoTurma == null || codigoTurma.trim().isEmpty()) {
-            throw new DadoInvalidoException("Código da turma não pode ser nulo ou vazio.");
-        }
-        if (codigoDisciplina == null || codigoDisciplina.trim().isEmpty()) {
-            throw new DadoInvalidoException("Código da disciplina não pode ser nulo ou vazio.");
-        }
-
-        Turma turma = buscarTurma(codigoTurma);
-        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
-
-        if (turma.getDisciplinas().contains(disciplina)) {
-            throw new DadoInvalidoException("A disciplina '" + disciplina.getNome() + "' já está associada a esta turma.");
-        }
-
-        turma.adicionarDisciplina(disciplina);
-        turmaRepositorio.atualizar(turma);
-    }
-
-    public void removerDisciplinaDaTurma(String codigoTurma, String codigoDisciplina) throws DadoInvalidoException, EntidadeNaoEncontradaException {
-        if (codigoTurma == null || codigoTurma.trim().isEmpty()) {
-            throw new DadoInvalidoException("Código da turma não pode ser nulo ou vazio.");
-        }
-        if (codigoDisciplina == null || codigoDisciplina.trim().isEmpty()) {
-            throw new DadoInvalidoException("Código da disciplina não pode ser nulo ou vazio.");
-        }
-
-        Turma turma = buscarTurma(codigoTurma);
-        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
-
-        if (!turma.getDisciplinas().contains(disciplina)) {
-            throw new EntidadeNaoEncontradaException("A disciplina '" + disciplina.getNome() + "' não está associada a esta turma.");
-        }
-
-        turma.removerDisciplina(disciplina);
-        turmaRepositorio.atualizar(turma);
-    }
-
-    public void matricularAlunoNaTurma(String codigoTurma, String matriculaAluno) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void matricularAlunoNaTurma(String codigoTurma, String matriculaAluno) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         if (codigoTurma == null || codigoTurma.trim().isEmpty()) {
             throw new DadoInvalidoException("Código da turma não pode ser nulo ou vazio.");
         }
@@ -163,7 +132,7 @@ public class TurmaServico {
         turmaRepositorio.atualizar(turma);
     }
 
-    public void desmatricularAlunoDaTurma(String codigoTurma, String matriculaAluno) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void desmatricularAlunoDaTurma(String codigoTurma, String matriculaAluno) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         if (codigoTurma == null || codigoTurma.trim().isEmpty()) {
             throw new DadoInvalidoException("Código da turma não pode ser nulo ou vazio.");
         }

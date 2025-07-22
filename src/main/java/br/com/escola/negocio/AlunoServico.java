@@ -46,7 +46,7 @@ public class AlunoServico {
         if (alunoRepositorio.buscarPorId(aluno.getMatricula()).isPresent()) {
             throw new DadoInvalidoException("Já existe um aluno cadastrado com a matrícula: " + aluno.getMatricula());
         }
-        alunoRepositorio.adicionar(aluno);
+        alunoRepositorio.salvar(aluno);
     }
 
     public Aluno buscarAluno(String matricula) throws EntidadeNaoEncontradaException, DadoInvalidoException {

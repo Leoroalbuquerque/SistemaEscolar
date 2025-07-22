@@ -26,14 +26,15 @@ public class ResponsavelServico {
         if (responsavel.getNome() == null || responsavel.getNome().trim().isEmpty()) {
             throw new DadoInvalidoException("Nome do responsável é obrigatório.");
         }
-        if (!responsavel.getCpfResponsavel().matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
-            throw new DadoInvalidoException("Formato de CPF do responsável inválido. Esperado 999.999.999-99.");
+        if (!responsavel.getCpfResponsavel().matches("\\d{11}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
+            throw new DadoInvalidoException("Formato de CPF do responsável inválido. Esperado 11 dígitos ou 999.999.999-99.");
         }
+        
         if (responsavelRepositorio.buscarPorId(responsavel.getCpfResponsavel()).isPresent()) {
             throw new DadoInvalidoException("Já existe um responsável cadastrado com o CPF: " + responsavel.getCpfResponsavel());
         }
 
-        responsavelRepositorio.adicionar(responsavel);
+        responsavelRepositorio.salvar(responsavel);
     }
 
     public Responsavel buscarResponsavel(String cpfResponsavel) throws EntidadeNaoEncontradaException, DadoInvalidoException {
@@ -54,8 +55,8 @@ public class ResponsavelServico {
         if (responsavel.getNome() == null || responsavel.getNome().trim().isEmpty()) {
             throw new DadoInvalidoException("Nome do responsável é obrigatório para atualização.");
         }
-        if (!responsavel.getCpfResponsavel().matches("\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
-            throw new DadoInvalidoException("Formato de CPF do responsável inválido. Esperado 999.999.999-99.");
+        if (!responsavel.getCpfResponsavel().matches("\\d{11}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
+            throw new DadoInvalidoException("Formato de CPF do responsável inválido. Esperado 11 dígitos ou 999.999.999-99.");
         }
         if (responsavelRepositorio.buscarPorId(responsavel.getCpfResponsavel()).isEmpty()) {
             throw new EntidadeNaoEncontradaException("Responsável com CPF " + responsavel.getCpfResponsavel() + " não encontrado para atualização.");
@@ -67,6 +68,9 @@ public class ResponsavelServico {
     public boolean deletarResponsavel(String cpfResponsavel) throws EntidadeNaoEncontradaException, DadoInvalidoException {
         if (cpfResponsavel == null || cpfResponsavel.trim().isEmpty()) {
             throw new DadoInvalidoException("CPF para deleção não pode ser nulo ou vazio.");
+        }
+        if (responsavelRepositorio.buscarPorId(cpfResponsavel).isEmpty()) {
+            throw new EntidadeNaoEncontradaException("Responsável com CPF " + cpfResponsavel + " não encontrado para deleção.");
         }
         return responsavelRepositorio.deletar(cpfResponsavel);
     }

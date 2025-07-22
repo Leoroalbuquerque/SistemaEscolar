@@ -1,22 +1,27 @@
 package br.com.escola.negocio;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Frequencia {
-    private Date data;
+    private LocalDate data;
     private boolean presenca;
     private String justificativa;
     private Disciplina disciplina;
     private Aluno aluno;
 
-    public void justificarFalta(String justificativa) {}
-    public void registrarPresenca(boolean presente) {}
+    public Frequencia(LocalDate data, boolean presenca, String justificativa, Disciplina disciplina, Aluno aluno) {
+        this.data = data;
+        this.presenca = presenca;
+        this.justificativa = justificativa;
+        this.disciplina = disciplina;
+        this.aluno = aluno;
+    }
 
-    public Date getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Date data) {
+    public void setData(LocalDate data) {
         this.data = data;
     }
 
@@ -50,5 +55,31 @@ public class Frequencia {
 
     public void setAluno(Aluno aluno) {
         this.aluno = aluno;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Frequencia that = (Frequencia) o;
+        return data.equals(that.data) &&
+               aluno.getMatricula().equals(that.aluno.getMatricula()) &&
+               disciplina.getCodigo().equals(that.disciplina.getCodigo());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(data, aluno.getMatricula(), disciplina.getCodigo());
+    }
+
+    @Override
+    public String toString() {
+        return "Frequencia{" +
+               "data=" + data +
+               ", presenca=" + presenca +
+               ", justificativa='" + justificativa + '\'' +
+               ", disciplina=" + (disciplina != null ? disciplina.getNome() : "N/A") +
+               ", aluno=" + (aluno != null ? aluno.getNome() : "N/A") +
+               '}';
     }
 }

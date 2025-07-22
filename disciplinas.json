@@ -1,1 +1,9 @@
-[ ]
+[ {
+  "codigo" : "MAT01",
+  "nome" : "Matemática Avançada",
+  "cargaHoraria" : 60
+}, {
+  "codigo" : "POR01",
+  "nome" : "Português e Redação",
+  "cargaHoraria" : 60
+} ]

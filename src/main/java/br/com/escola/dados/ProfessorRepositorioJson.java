@@ -3,9 +3,11 @@ package br.com.escola.dados;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import br.com.escola.negocio.Professor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +27,8 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
     public ProfessorRepositorioJson() {
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.registerModule(new JavaTimeModule());
         carregarDados();
     }
 
@@ -52,7 +56,7 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
     }
 
     @Override
-    public void adicionar(Professor entidade) throws DadoInvalidoException {
+    public void salvar(Professor entidade) throws DadoInvalidoException {
         if (entidade == null || entidade.getRegistroFuncional() == null || entidade.getRegistroFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Professor ou registro funcional não pode ser nulo.");
         }
@@ -116,6 +120,7 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
         return new ArrayList<>(professores);
     }
 
+    @Override
     public void limpar() {
         this.professores.clear();
         salvarDados();

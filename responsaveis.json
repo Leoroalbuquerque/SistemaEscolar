@@ -1,20 +1,20 @@
 [
   {
-    "parentesco": "Pai",
+    "parentesco": "Mãe",
     "cpfResponsavel": "111.111.111-11",
     "principal": true,
-    "nome": "Carlos Pai",
+    "nome": "Joana Silva",
     "cpf": "111.111.111-11",
-    "telefone": "91111-0000",
-    "email": "carlos.pai@email.com"
+    "telefone": "9999-0000",
+    "email": "joana@email.com"
   },
   {
-    "parentesco": "Mãe",
+    "parentesco": "Pai",
     "cpfResponsavel": "222.222.222-22",
-    "principal": true,
-    "nome": "Ana Mae",
+    "principal": false,
+    "nome": "Carlos Souza",
     "cpf": "222.222.222-22",
-    "telefone": "92222-2222",
-    "email": "ana.mae@email.com"
+    "telefone": "8888-1111",
+    "email": "carlos@email.com"
   }
 ]

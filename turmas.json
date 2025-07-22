@@ -1,1 +1,96 @@
-[ ]
+[ {
+  "codigo" : "TMA2025-02",
+  "nomeTurma" : "Tarde 2025",
+  "anoLetivo" : 2025,
+  "professorResponsavel" : {
+    "registroFuncional" : "MAT002",
+    "nome" : "Profa. Laura Mendes",
+    "cpf" : "987.654.321-09",
+    "telefone" : "1234-5678",
+    "email" : "laura.mendes@escola.com",
+    "especialidade" : "Português",
+    "salario" : 4200.0,
+    "disciplinasLecionadas" : [ {
+      "id" : "2b14be08-4c80-4a0c-ad83-a0f40a533f96",
+      "disciplina" : {
+        "codigo" : "POR01",
+        "nome" : "Português e Redação",
+        "cargaHoraria" : 60
+      },
+      "professor" : "MAT002",
+      "turma" : {
+        "codigo" : "TMA2025-01",
+        "nomeTurma" : "Manhã 2025",
+        "anoLetivo" : 2025,
+        "professorResponsavel" : {
+          "registroFuncional" : "POR001",
+          "nome" : "Prof. Ricardo Lima",
+          "cpf" : "123.456.789-01",
+          "telefone" : "9876-5432",
+          "email" : "ricardo.lima@escola.com",
+          "especialidade" : "Matemática",
+          "salario" : 4500.0,
+          "disciplinasLecionadas" : [ {
+            "id" : "7e00ac60-a740-4bbc-a14d-68509347afb7",
+            "disciplina" : {
+              "codigo" : "MAT01",
+              "nome" : "Matemática Avançada",
+              "cargaHoraria" : 60
+            },
+            "professor" : "POR001",
+            "turma" : {
+              "codigo" : "TMA2025-01",
+              "nomeTurma" : "Manhã 2025",
+              "anoLetivo" : 2025,
+              "professorResponsavel" : "POR001",
+              "atribuicoesDisciplinaTurma" : [ ],
+              "alunosMatriculados" : [ {
+                "nome" : "Maria Eduarda",
+                "cpf" : "555.555.555-55",
+                "telefone" : "9999-0001",
+                "email" : "maria.eduarda@email.com",
+                "matricula" : "2025001",
+                "anoLetivo" : 6,
+                "cpfsResponsaveis" : [ "111.111.111-11" ],
+                "dataNascimento" : [ 2010, 3, 20 ]
+              } ],
+              "disciplinas" : [ ]
+            }
+          } ]
+        },
+        "atribuicoesDisciplinaTurma" : [ ],
+        "alunosMatriculados" : [ {
+          "nome" : "Maria Eduarda",
+          "cpf" : "555.555.555-55",
+          "telefone" : "9999-0001",
+          "email" : "maria.eduarda@email.com",
+          "matricula" : "2025001",
+          "anoLetivo" : 6,
+          "cpfsResponsaveis" : [ "111.111.111-11" ],
+          "dataNascimento" : [ 2010, 3, 20 ]
+        } ],
+        "disciplinas" : [ ]
+      }
+    } ]
+  },
+  "atribuicoesDisciplinaTurma" : [ ],
+  "alunosMatriculados" : [ ],
+  "disciplinas" : [ ]
+}, {
+  "codigo" : "TMA2025-01",
+  "nomeTurma" : "Manhã 2025",
+  "anoLetivo" : 2025,
+  "professorResponsavel" : "POR001",
+  "atribuicoesDisciplinaTurma" : [ ],
+  "alunosMatriculados" : [ {
+    "nome" : "Maria Eduarda",
+    "cpf" : "555.555.555-55",
+    "telefone" : "9999-0001",
+    "email" : "maria.eduarda@email.com",
+    "matricula" : "2025001",
+    "anoLetivo" : 6,
+    "cpfsResponsaveis" : [ "111.111.111-11" ],
+    "dataNascimento" : [ 2010, 3, 20 ]
+  } ],
+  "disciplinas" : [ ]
+} ]

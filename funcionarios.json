@@ -1,1 +1,9 @@
-[ ]
+[ {
+  "nome" : "Pedro Álvares",
+  "cpf" : "555.555.555-55",
+  "telefone" : "5555-4444",
+  "email" : "pedro@escola.com",
+  "matriculaFuncional" : "SEC0001",
+  "cargo" : "Secretário",
+  "salario" : 3000.0
+} ]

@@ -2,7 +2,9 @@ package br.com.escola.negocio;
 
 import java.io.Serializable;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Disciplina implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -11,6 +13,12 @@ public class Disciplina implements Serializable {
     private int cargaHoraria;
 
     public Disciplina() {
+    }
+
+    public Disciplina(String codigo, String nome) {
+        this.codigo = codigo;
+        this.nome = nome;
+        this.cargaHoraria = 0;
     }
 
     public Disciplina(String codigo, String nome, int cargaHoraria) {
@@ -58,9 +66,6 @@ public class Disciplina implements Serializable {
 
     @Override
     public String toString() {
-        return "Disciplina{" +
-               "codigo='" + codigo + '\'' +
-               ", nome='" + nome + '\'' +
-               '}';
+        return nome + " (" + codigo + ")";
     }
 }

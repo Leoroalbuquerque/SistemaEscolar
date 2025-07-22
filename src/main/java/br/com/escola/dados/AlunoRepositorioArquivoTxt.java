@@ -1,9 +1,8 @@
 package br.com.escola.dados;
 
-import br.com.escola.negocio.Aluno;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
-
+import br.com.escola.negocio.Aluno;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,118 +11,98 @@ import java.util.stream.Collectors;
 
 public class AlunoRepositorioArquivoTxt implements IRepositorio<Aluno, String> {
 
-    private static final String NOME_ARQUIVO = "alunos.txt";
+    private final String CAMINHO_ARQUIVO = "alunos.txt";
+    private List<Aluno> alunos;
 
     public AlunoRepositorioArquivoTxt() {
-        File arquivo = new File(NOME_ARQUIVO);
-        if (!arquivo.exists()) {
-            try {
-                arquivo.createNewFile();
-                System.out.println("Arquivo " + NOME_ARQUIVO + " criado.");
-            } catch (IOException e) {
-                System.err.println("Erro ao criar o arquivo " + NOME_ARQUIVO + ": " + e.getMessage());
-            }
-        }
+        alunos = carregarDados();
     }
 
-    private void salvarNoArquivo(List<Aluno> alunos) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(NOME_ARQUIVO))) {
+    private List<Aluno> carregarDados() {
+        List<Aluno> lista = new ArrayList<>();
+        File arquivo = new File(CAMINHO_ARQUIVO);
+        if (arquivo.exists() && arquivo.length() > 0) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(arquivo))) {
+                String linha;
+                while ((linha = reader.readLine()) != null) {
+                    Aluno aluno = Aluno.fromLine(linha);
+                    if (aluno != null) {
+                        lista.add(aluno);
+                    }
+                }
+            } catch (IOException e) {
+                System.err.println("Erro ao carregar dados de alunos do arquivo: " + e.getMessage());
+            }
+        }
+        return lista;
+    }
+
+    private void salvarDados() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(CAMINHO_ARQUIVO))) {
             for (Aluno aluno : alunos) {
-                writer.write(aluno.getNome() + ";" +
-                             aluno.getCpf() + ";" +
-                             aluno.getTelefone() + ";" +
-                             aluno.getEmail() + ";" +
-                             aluno.getMatricula() + ";" +
-                             aluno.getAnoLetivo());
+                writer.write(aluno.toLine());
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.err.println("Erro ao salvar alunos no arquivo: " + e.getMessage());
+            System.err.println("Erro ao salvar dados de alunos no arquivo: " + e.getMessage());
         }
-    }
-
-    private List<Aluno> carregarDoArquivo() {
-        List<Aluno> alunos = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(NOME_ARQUIVO))) {
-            String linha;
-            while ((linha = reader.readLine()) != null) {
-                String[] dados = linha.split(";");
-                if (dados.length == 6) {
-                    Aluno aluno = new Aluno();
-                    aluno.setNome(dados[0]);
-                    aluno.setCpf(dados[1]);
-                    aluno.setTelefone(dados[2]);
-                    aluno.setEmail(dados[3]);
-                    aluno.setMatricula(dados[4]);
-                    aluno.setAnoLetivo(Integer.parseInt(dados[5]));
-                    alunos.add(aluno);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Arquivo " + NOME_ARQUIVO + " não encontrado. Iniciando com lista vazia.");
-        } catch (IOException e) {
-            System.err.println("Erro ao carregar alunos do arquivo: " + e.getMessage());
-        } catch (NumberFormatException e) {
-            System.err.println("Erro de formato numérico ao carregar aluno: " + e.getMessage());
-        }
-        return alunos;
     }
 
     @Override
-    public void adicionar(Aluno entidade) throws DadoInvalidoException {
-        if (entidade == null || entidade.getMatricula() == null || entidade.getMatricula().trim().isEmpty()) {
-            throw new DadoInvalidoException("Matrícula do aluno é obrigatória.");
+    public void salvar(Aluno aluno) throws DadoInvalidoException {
+        if (aluno == null) {
+            throw new DadoInvalidoException("Aluno não pode ser nulo.");
         }
-        List<Aluno> alunos = carregarDoArquivo();
-        boolean existe = alunos.stream()
-                .anyMatch(a -> a.getMatricula().equals(entidade.getMatricula()));
-        if (existe) {
-            throw new DadoInvalidoException("Aluno com matrícula " + entidade.getMatricula() + " já existe.");
+        if (buscarPorId(aluno.getCpf()).isPresent()) {
+            throw new DadoInvalidoException("Aluno com CPF " + aluno.getCpf() + " já existe.");
         }
-        alunos.add(entidade);
-        salvarNoArquivo(alunos);
+        alunos.add(aluno);
+        salvarDados();
     }
 
     @Override
-    public Optional<Aluno> buscarPorId(String chave) {
-        List<Aluno> alunos = carregarDoArquivo();
+    public Optional<Aluno> buscarPorId(String cpf) {
         return alunos.stream()
-                .filter(a -> a.getMatricula().equals(chave))
+                .filter(a -> a.getCpf().equals(cpf))
                 .findFirst();
     }
 
     @Override
-    public void atualizar(Aluno entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException {
-        if (entidade == null || entidade.getMatricula() == null || entidade.getMatricula().trim().isEmpty()) {
-            throw new DadoInvalidoException("Matrícula do aluno para atualização é obrigatória.");
+    public void atualizar(Aluno aluno) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+        if (aluno == null) {
+            throw new DadoInvalidoException("Aluno não pode ser nulo para atualização.");
         }
-        List<Aluno> alunos = carregarDoArquivo();
-        boolean removido = alunos.removeIf(a -> a.getMatricula().equals(entidade.getMatricula()));
-        if (removido) {
-            alunos.add(entidade);
-            salvarNoArquivo(alunos);
-        } else {
-            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + entidade.getMatricula() + " não encontrado para atualização.");
+        Optional<Aluno> existenteOpt = buscarPorId(aluno.getCpf());
+        if (existenteOpt.isEmpty()) {
+            throw new EntidadeNaoEncontradaException("Aluno com CPF " + aluno.getCpf() + " não encontrado para atualização.");
         }
+        alunos = alunos.stream()
+                .map(a -> a.getCpf().equals(aluno.getCpf()) ? aluno : a)
+                .collect(Collectors.toList());
+        salvarDados();
     }
 
     @Override
-    public boolean deletar(String chave) throws EntidadeNaoEncontradaException, DadoInvalidoException {
-        if (chave == null || chave.trim().isEmpty()) {
-            throw new DadoInvalidoException("Matrícula para deleção não pode ser nula ou vazia.");
+    public boolean deletar(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+        if (cpf == null || cpf.isEmpty()) {
+            throw new DadoInvalidoException("CPF do aluno não pode ser nulo ou vazio.");
         }
-        List<Aluno> alunos = carregarDoArquivo();
-        boolean removido = alunos.removeIf(a -> a.getMatricula().equals(chave));
-        if (removido) {
-            salvarNoArquivo(alunos);
-            return true;
-        } else {
-            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + chave + " não encontrado para deleção.");
+        boolean removido = alunos.removeIf(a -> a.getCpf().equals(cpf));
+        if (!removido) {
+            throw new EntidadeNaoEncontradaException("Aluno com CPF " + cpf + " não encontrado para exclusão.");
         }
+        salvarDados();
+        return removido;
     }
 
     @Override
     public List<Aluno> listarTodos() {
-        return new ArrayList<>(carregarDoArquivo());
+        return new ArrayList<>(alunos);
+    }
+
+    @Override
+    public void limpar() {
+        alunos.clear();
+        salvarDados();
     }
 }

@@ -3,8 +3,10 @@ package br.com.escola.dados;
 import br.com.escola.negocio.Funcionario;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.io.File;
@@ -22,6 +24,8 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
     public FuncionarioRepositorioJson() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.funcionarios = new ArrayList<>();
         carregarFuncionariosDoArquivo();
     }
@@ -50,7 +54,7 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
     }
 
     @Override
-    public void adicionar(Funcionario entidade) throws DadoInvalidoException {
+    public void salvar(Funcionario entidade) throws DadoInvalidoException {
         if (entidade == null || entidade.getMatriculaFuncional() == null || entidade.getMatriculaFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Erro: Tentativa de adicionar funcionário nulo ou com matrícula funcional vazia/nula.");
         }
@@ -116,6 +120,7 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
         return new ArrayList<>(this.funcionarios);
     }
 
+    @Override
     public void limpar() {
         this.funcionarios.clear();
         salvarFuncionariosNoArquivo();

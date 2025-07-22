@@ -2,7 +2,9 @@ package br.com.escola.negocio;
 
 import java.io.Serializable;
 import java.util.Objects;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Responsavel extends Pessoa implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -20,6 +22,13 @@ public class Responsavel extends Pessoa implements Serializable {
         this.parentesco = parentesco;
         this.cpfResponsavel = cpfResponsavel;
         this.principal = principal;
+    }
+
+    public Responsavel(String nome, String cpfPessoa, String telefonePessoa, String cpfResponsavel) {
+        super(nome, cpfPessoa, telefonePessoa, null);
+        this.cpfResponsavel = cpfResponsavel;
+        this.parentesco = "";
+        this.principal = false;
     }
 
     public String getParentesco() {
@@ -63,13 +72,13 @@ public class Responsavel extends Pessoa implements Serializable {
     @Override
     public String toString() {
         return "Responsavel{" +
-               "nome='" + getNome() + '\'' +
-               ", cpf='" + getCpf() + '\'' +
-               ", telefone='" + getTelefone() + '\'' +
-               ", email='" + getEmail() + '\'' +
-               ", parentesco='" + parentesco + '\'' +
-               ", cpfResponsavel='" + cpfResponsavel + '\'' +
-               ", principal=" + principal +
-               '}';
+                "nome='" + getNome() + '\'' +
+                ", cpf='" + getCpf() + '\'' +
+                ", telefone='" + getTelefone() + '\'' +
+                ", email='" + getEmail() + '\'' +
+                ", parentesco='" + parentesco + '\'' +
+                ", cpfResponsavel='" + cpfResponsavel + '\'' +
+                ", principal=" + principal +
+                '}';
     }
 }

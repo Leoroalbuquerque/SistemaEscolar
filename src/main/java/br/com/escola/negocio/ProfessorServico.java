@@ -34,7 +34,7 @@ public class ProfessorServico {
             throw new DadoInvalidoException("Já existe um professor com o registro funcional: " + professor.getRegistroFuncional());
         }
         
-        professorRepositorio.adicionar(professor);
+        professorRepositorio.salvar(professor);
     }
 
     public Professor buscarProfessor(String registroFuncional) throws EntidadeNaoEncontradaException, DadoInvalidoException {

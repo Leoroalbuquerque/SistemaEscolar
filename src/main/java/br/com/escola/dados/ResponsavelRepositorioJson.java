@@ -47,7 +47,7 @@ public class ResponsavelRepositorioJson implements IRepositorio<Responsavel, Str
     }
 
     @Override
-    public void adicionar(Responsavel responsavel) throws DadoInvalidoException {
+    public void salvar(Responsavel responsavel) throws DadoInvalidoException {
         if (buscarPorId(responsavel.getCpfResponsavel()).isPresent()) {
             throw new DadoInvalidoException("Responsável com CPF " + responsavel.getCpfResponsavel() + " já existe.");
         }
@@ -108,6 +108,7 @@ public class ResponsavelRepositorioJson implements IRepositorio<Responsavel, Str
         return new ArrayList<>(responsaveis);
     }
 
+    @Override
     public void limpar() {
         this.responsaveis.clear();
         try {
