@@ -1,0 +1,104 @@
+[
+  {
+    "codigoSerie": "S01",
+    "nomeSerie": "INFANTIL 1",
+    "nivel": "INFANTIL",
+    "ordem": 1
+  },
+  {
+    "codigoSerie": "S02",
+    "nomeSerie": "INFANTIL 2",
+    "nivel": "INFANTIL",
+    "ordem": 2
+  },
+  {
+    "codigoSerie": "S03",
+    "nomeSerie": "INFANTIL 3",
+    "nivel": "INFANTIL",
+    "ordem": 3
+  },
+  {
+    "codigoSerie": "S04",
+    "nomeSerie": "INFANTIL 4",
+    "nivel": "INFANTIL",
+    "ordem": 4
+  },
+  {
+    "codigoSerie": "S05",
+    "nomeSerie": "INFANTIL 5",
+    "nivel": "INFANTIL",
+    "ordem": 5
+  },
+  {
+    "codigoSerie": "S06",
+    "nomeSerie": "1º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_1",
+    "ordem": 1
+  },
+  {
+    "codigoSerie": "S07",
+    "nomeSerie": "2º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_1",
+    "ordem": 2
+  },
+  {
+    "codigoSerie": "S08",
+    "nomeSerie": "3º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_1",
+    "ordem": 3
+  },
+  {
+    "codigoSerie": "S09",
+    "nomeSerie": "4º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_1",
+    "ordem": 4
+  },
+  {
+    "codigoSerie": "S10",
+    "nomeSerie": "5º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_1",
+    "ordem": 5
+  },
+  {
+    "codigoSerie": "S11",
+    "nomeSerie": "6º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_2",
+    "ordem": 6
+  },
+  {
+    "codigoSerie": "S12",
+    "nomeSerie": "7º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_2",
+    "ordem": 7
+  },
+  {
+    "codigoSerie": "S13",
+    "nomeSerie": "8º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_2",
+    "ordem": 8
+  },
+  {
+    "codigoSerie": "S14",
+    "nomeSerie": "9º ANO FUNDAMENTAL",
+    "nivel": "FUNDAMENTAL_2",
+    "ordem": 9
+  },
+  {
+    "codigoSerie": "S15",
+    "nomeSerie": "1º ANO MÉDIO",
+    "nivel": "MEDIO",
+    "ordem": 1
+  },
+  {
+    "codigoSerie": "S16",
+    "nomeSerie": "2º ANO MÉDIO",
+    "nivel": "MEDIO",
+    "ordem": 2
+  },
+  {
+    "codigoSerie": "S17",
+    "nomeSerie": "3º ANO MÉDIO",
+    "nivel": "MEDIO",
+    "ordem": 3
+  }
+]

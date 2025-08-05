@@ -4,8 +4,10 @@ import br.com.escola.negocio.Nota;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +26,8 @@ public class NotaRepositorioJson {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.objectMapper.registerModule(new JavaTimeModule());
+        this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         this.notas = carregarNotasDoArquivo();
     }
 
@@ -55,7 +59,7 @@ public class NotaRepositorioJson {
         salvarNotasNoArquivo();
     }
 
-    public Nota buscar(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, java.util.Date dataLancamento) {
+    public Nota buscar(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, LocalDate dataLancamento) {
         return this.notas.stream()
                 .filter(n -> Objects.equals(n.getAluno().getMatricula(), matriculaAluno) &&
                               Objects.equals(n.getDisciplina().getCodigo(), codigoDisciplina) &&
@@ -78,7 +82,7 @@ public class NotaRepositorioJson {
         }
     }
 
-    public boolean deletar(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, java.util.Date dataLancamento) {
+    public boolean deletar(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, LocalDate dataLancamento) {
         boolean removido = this.notas.removeIf(n -> Objects.equals(n.getAluno().getMatricula(), matriculaAluno) &&
                                                      Objects.equals(n.getDisciplina().getCodigo(), codigoDisciplina) &&
                                                      Objects.equals(n.getTipoAvaliacao(), tipoAvaliacao) &&

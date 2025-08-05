@@ -142,14 +142,10 @@ public class TelaCadastroDisciplina extends JDialog {
 
             int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar a disciplina " + codigo + "?", "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean deletado = fachada.deletarDisciplina(codigo);
-                if (deletado) {
-                    JOptionPane.showMessageDialog(this, "Disciplina deletada com sucesso!");
-                    limparCampos();
-                    listarTodasDisciplinas();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Não foi possível deletar a disciplina.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }
+                fachada.deletarDisciplina(codigo);
+                JOptionPane.showMessageDialog(this, "Disciplina deletada com sucesso!");
+                limparCampos();
+                listarTodasDisciplinas();
             }
         } catch (EntidadeNaoEncontradaException ex) {
             JOptionPane.showMessageDialog(this, "Erro: Disciplina não encontrada para exclusão. " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);

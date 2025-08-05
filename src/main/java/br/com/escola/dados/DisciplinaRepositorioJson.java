@@ -12,8 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, String> {
 
@@ -34,29 +32,24 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
         if (arquivo.exists() && arquivo.length() > 0) {
             try {
                 this.disciplinas = objectMapper.readValue(arquivo, new TypeReference<List<Disciplina>>() {});
-                System.out.println("Disciplinas carregadas do arquivo: " + NOME_ARQUIVO);
             } catch (IOException e) {
-                System.err.println("Erro ao carregar disciplinas do arquivo JSON. Criando um novo arquivo se o conteúdo estiver inválido. Detalhes: " + e.getMessage());
+                System.err.println("Erro ao carregar disciplinas do arquivo JSON. Detalhes: " + e.getMessage());
                 this.disciplinas = new ArrayList<>();
-                salvarDisciplinasNoArquivo();
             }
-        } else {
-            System.out.println("Arquivo " + NOME_ARQUIVO + " não encontrado ou vazio. Iniciando com lista vazia de disciplinas.");
-            salvarDisciplinasNoArquivo();
         }
     }
 
-    private void salvarDisciplinasNoArquivo() {
+    private void salvarDisciplinasNoArquivo() throws IOException {
         try {
             objectMapper.writeValue(new File(NOME_ARQUIVO), this.disciplinas);
-            System.out.println("Disciplinas salvas no arquivo: " + NOME_ARQUIVO);
         } catch (IOException e) {
             System.err.println("Erro ao salvar disciplinas no arquivo JSON: " + e.getMessage());
+            throw e;
         }
     }
 
     @Override
-    public void salvar(Disciplina entidade) throws DadoInvalidoException {
+    public void salvar(Disciplina entidade) throws DadoInvalidoException, IOException {
         if (entidade == null || entidade.getCodigo() == null || entidade.getCodigo().trim().isEmpty()) {
             throw new DadoInvalidoException("Erro: Tentativa de salvar disciplina nula ou com código vazio/nulo.");
         }
@@ -64,28 +57,28 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
             throw new DadoInvalidoException("Erro: Nome da disciplina é obrigatório para salvar.");
         }
 
-        boolean existe = this.disciplinas.stream()
-                .anyMatch(d -> d != null && d.getCodigo() != null && d.getCodigo().equals(entidade.getCodigo()));
-        if (existe) {
+        try {
+            buscarPorId(entidade.getCodigo());
             throw new DadoInvalidoException("Já existe uma disciplina cadastrada com o código: " + entidade.getCodigo() + ". Use o método 'atualizar' para modificar.");
+        } catch (EntidadeNaoEncontradaException e) {
+            this.disciplinas.add(entidade);
+            salvarDisciplinasNoArquivo();
         }
-
-        this.disciplinas.add(entidade);
-        salvarDisciplinasNoArquivo();
     }
 
     @Override
-    public Optional<Disciplina> buscarPorId(String chave) {
+    public Disciplina buscarPorId(String chave) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (chave == null || chave.trim().isEmpty()) {
-            return Optional.empty();
+            throw new DadoInvalidoException("Código para busca não pode ser nulo ou vazio.");
         }
         return this.disciplinas.stream()
-                .filter(d -> d != null && d.getCodigo() != null && d.getCodigo().equals(chave))
-                .findFirst();
+                .filter(d -> d.getCodigo().equals(chave))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Disciplina com código " + chave + " não encontrada."));
     }
 
     @Override
-    public void atualizar(Disciplina entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizar(Disciplina entidade) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (entidade == null || entidade.getCodigo() == null || entidade.getCodigo().trim().isEmpty()) {
             throw new DadoInvalidoException("Não é possível atualizar: Disciplina ou código inválido.");
         }
@@ -93,39 +86,41 @@ public class DisciplinaRepositorioJson implements IRepositorio<Disciplina, Strin
             throw new DadoInvalidoException("Nome da disciplina é obrigatório para atualização.");
         }
 
-        Optional<Disciplina> disciplinaExistenteOpt = buscarPorId(entidade.getCodigo());
-        if (disciplinaExistenteOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Disciplina com código " + entidade.getCodigo() + " não encontrada para atualização.");
+        boolean encontrada = false;
+        for (int i = 0; i < disciplinas.size(); i++) {
+            if (disciplinas.get(i).getCodigo().equals(entidade.getCodigo())) {
+                disciplinas.set(i, entidade);
+                encontrada = true;
+                break;
+            }
         }
 
-        this.disciplinas.removeIf(d -> d != null && d.getCodigo() != null && d.getCodigo().equals(entidade.getCodigo()));
-        this.disciplinas.add(entidade);
+        if (!encontrada) {
+            throw new EntidadeNaoEncontradaException("Disciplina com código " + entidade.getCodigo() + " não encontrada para atualização.");
+        }
         salvarDisciplinasNoArquivo();
     }
 
     @Override
-    public boolean deletar(String chave) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String chave) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (chave == null || chave.trim().isEmpty()) {
             throw new DadoInvalidoException("Código para deleção não pode ser nulo ou vazio.");
         }
-        boolean removido = this.disciplinas.removeIf(d -> d != null && d.getCodigo() != null && d.getCodigo().equals(chave));
-        if (removido) {
-            salvarDisciplinasNoArquivo();
-            return true;
-        } else {
-            throw new EntidadeNaoEncontradaException("Disciplina com código " + chave + " não encontrada para deleção no JSON.");
+        boolean removido = this.disciplinas.removeIf(d -> d.getCodigo().equals(chave));
+        if (!removido) {
+            throw new EntidadeNaoEncontradaException("Disciplina com código " + chave + " não encontrada para exclusão.");
         }
+        salvarDisciplinasNoArquivo();
     }
 
     @Override
-    public List<Disciplina> listarTodos() {
+    public List<Disciplina> listarTodos() throws IOException {
         return new ArrayList<>(this.disciplinas);
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         this.disciplinas.clear();
         salvarDisciplinasNoArquivo();
-        System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

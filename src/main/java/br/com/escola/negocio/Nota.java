@@ -1,7 +1,7 @@
 package br.com.escola.negocio;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
 public class Nota implements Serializable {
@@ -9,14 +9,14 @@ public class Nota implements Serializable {
 
     private double valor;
     private String tipoAvaliacao;
-    private Date dataLancamento;
+    private LocalDate dataLancamento;
     private Disciplina disciplina;
     private Aluno aluno;
 
     public Nota() {
     }
 
-    public Nota(double valor, String tipoAvaliacao, Date dataLancamento, Disciplina disciplina, Aluno aluno) {
+    public Nota(double valor, String tipoAvaliacao, LocalDate dataLancamento, Disciplina disciplina, Aluno aluno) {
         this.valor = valor;
         this.tipoAvaliacao = tipoAvaliacao;
         this.dataLancamento = dataLancamento;
@@ -40,11 +40,11 @@ public class Nota implements Serializable {
         this.tipoAvaliacao = tipoAvaliacao;
     }
 
-    public Date getDataLancamento() {
+    public LocalDate getDataLancamento() {
         return dataLancamento;
     }
 
-    public void setDataLancamento(Date dataLancamento) {
+    public void setDataLancamento(LocalDate dataLancamento) {
         this.dataLancamento = dataLancamento;
     }
 

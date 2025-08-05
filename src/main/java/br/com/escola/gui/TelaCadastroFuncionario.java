@@ -1,281 +1,263 @@
 package br.com.escola.gui;
 
 import br.com.escola.negocio.Funcionario;
-import br.com.escola.negocio.Fachada;
 import br.com.escola.negocio.IFachada;
+import br.com.escola.negocio.Fachada;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
+import java.io.IOException;
 
 public class TelaCadastroFuncionario extends JDialog {
 
-    private JTextField campoCPF;
-    private JTextField campoNome;
-    private JTextField campoTelefone;
-    private JTextField campoEmail;
-    private JTextField campoMatriculaFuncional;
-    private JTextField campoCargo;
-    private JTextField campoSalario;
+    private final IFachada fachada;
+    private JTextField campoNome, campoCPF, campoTelefone, campoEmail, campoMatriculaFuncional, campoCargo, campoSalario;
+    private JButton btnAdicionar, btnAtualizar, btnBuscar, btnDeletar, btnLimpar;
+    private JTable tabelaFuncionarios;
+    private DefaultTableModel modeloTabela;
 
-    private JButton btnAdicionar;
-    private JButton btnBuscar;
-    private JButton btnAtualizar;
-    private JButton btnDeletar;
-    private JButton btnLimpar;
-    private JButton btnListarTodos;
-
-    private JTextArea areaResultados;
-
-    private IFachada fachada;
-
-    public TelaCadastroFuncionario(JFrame parent, boolean modal) {
-        super(parent, "Cadastro de Funcionários", modal);
-
+    public TelaCadastroFuncionario(Frame owner, boolean modal) {
+        super(owner, "Cadastro de Funcionários", modal);
         this.fachada = Fachada.getInstance();
+        initComponents();
+        carregarFuncionariosNaTabela();
+        configurarListeners();
+    }
 
-        setSize(700, 650);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(parent);
+    private void initComponents() {
+        setSize(800, 600);
+        setLocationRelativeTo(getParent());
+        setLayout(new BorderLayout());
 
-        JPanel panelPrincipal = new JPanel(new BorderLayout());
-        JPanel panelForm = new JPanel(new GridLayout(7, 2, 10, 10));
-        panelForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        JPanel painelFormulario = new JPanel(new GridLayout(7, 2, 10, 10));
+        painelFormulario.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        panelForm.add(new JLabel("CPF:"));
-        campoCPF = new JTextField(20);
-        panelForm.add(campoCPF);
+        painelFormulario.add(new JLabel("Nome:"));
+        campoNome = new JTextField();
+        painelFormulario.add(campoNome);
 
-        panelForm.add(new JLabel("Nome:"));
-        campoNome = new JTextField(20);
-        panelForm.add(campoNome);
+        painelFormulario.add(new JLabel("CPF:"));
+        campoCPF = new JTextField();
+        painelFormulario.add(campoCPF);
 
-        panelForm.add(new JLabel("Telefone:"));
-        campoTelefone = new JTextField(20);
-        panelForm.add(campoTelefone);
+        painelFormulario.add(new JLabel("Telefone:"));
+        campoTelefone = new JTextField();
+        painelFormulario.add(campoTelefone);
 
-        panelForm.add(new JLabel("Email:"));
-        campoEmail = new JTextField(20);
-        panelForm.add(campoEmail);
+        painelFormulario.add(new JLabel("Email:"));
+        campoEmail = new JTextField();
+        painelFormulario.add(campoEmail);
 
-        panelForm.add(new JLabel("Matrícula Funcional:"));
-        campoMatriculaFuncional = new JTextField(20);
-        panelForm.add(campoMatriculaFuncional);
+        painelFormulario.add(new JLabel("Matrícula Funcional:"));
+        campoMatriculaFuncional = new JTextField();
+        painelFormulario.add(campoMatriculaFuncional);
 
-        panelForm.add(new JLabel("Cargo:"));
-        campoCargo = new JTextField(20);
-        panelForm.add(campoCargo);
+        painelFormulario.add(new JLabel("Cargo:"));
+        campoCargo = new JTextField();
+        painelFormulario.add(campoCargo);
 
-        panelForm.add(new JLabel("Salário:"));
-        campoSalario = new JTextField(20);
-        panelForm.add(campoSalario);
+        painelFormulario.add(new JLabel("Salário:"));
+        campoSalario = new JTextField();
+        painelFormulario.add(campoSalario);
 
-        JPanel panelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        add(painelFormulario, BorderLayout.NORTH);
+
+        String[] colunas = {"Matrícula", "Nome", "Cargo", "Salário"};
+        modeloTabela = new DefaultTableModel(colunas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tabelaFuncionarios = new JTable(modeloTabela);
+        JScrollPane scrollPane = new JScrollPane(tabelaFuncionarios);
+        add(scrollPane, BorderLayout.CENTER);
+
+        tabelaFuncionarios.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && tabelaFuncionarios.getSelectedRow() != -1) {
+                preencherCamposComDadosDaTabela();
+            }
+        });
+
+        JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         btnAdicionar = new JButton("Adicionar");
-        btnBuscar = new JButton("Buscar");
         btnAtualizar = new JButton("Atualizar");
+        btnBuscar = new JButton("Buscar");
         btnDeletar = new JButton("Deletar");
-        btnLimpar = new JButton("Limpar Campos");
-        btnListarTodos = new JButton("Listar Todos");
+        btnLimpar = new JButton("Limpar");
 
-        panelBotoes.add(btnAdicionar);
-        panelBotoes.add(btnBuscar);
-        panelBotoes.add(btnAtualizar);
-        panelBotoes.add(btnDeletar);
-        panelBotoes.add(btnLimpar);
-        panelBotoes.add(btnListarTodos);
+        painelBotoes.add(btnAdicionar);
+        painelBotoes.add(btnAtualizar);
+        painelBotoes.add(btnBuscar);
+        painelBotoes.add(btnDeletar);
+        painelBotoes.add(btnLimpar);
 
-        areaResultados = new JTextArea(10, 50);
-        areaResultados.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(areaResultados);
+        add(painelBotoes, BorderLayout.SOUTH);
+    }
 
-        panelPrincipal.add(panelForm, BorderLayout.NORTH);
-        panelPrincipal.add(panelBotoes, BorderLayout.CENTER);
-        panelPrincipal.add(scrollPane, BorderLayout.SOUTH);
-
-        add(panelPrincipal);
-
+    private void configurarListeners() {
         btnAdicionar.addActionListener(e -> adicionarFuncionario());
-        btnBuscar.addActionListener(e -> buscarFuncionario());
         btnAtualizar.addActionListener(e -> atualizarFuncionario());
+        btnBuscar.addActionListener(e -> buscarFuncionario());
         btnDeletar.addActionListener(e -> deletarFuncionario());
         btnLimpar.addActionListener(e -> limparCampos());
-        btnListarTodos.addActionListener(e -> listarTodosFuncionarios());
+    }
+
+    private void preencherCamposComDadosDaTabela() {
+        int linhaSelecionada = tabelaFuncionarios.getSelectedRow();
+        if (linhaSelecionada >= 0) {
+            String matricula = (String) modeloTabela.getValueAt(linhaSelecionada, 0);
+            try {
+                Funcionario funcionario = fachada.buscarFuncionario(matricula);
+                campoNome.setText(funcionario.getNome());
+                campoCPF.setText(funcionario.getCpf());
+                campoTelefone.setText(funcionario.getTelefone());
+                campoEmail.setText(funcionario.getEmail());
+                campoMatriculaFuncional.setText(funcionario.getMatriculaFuncional());
+                campoCargo.setText(funcionario.getCargo());
+                campoSalario.setText(String.valueOf(funcionario.getSalario()));
+            } catch (EntidadeNaoEncontradaException | DadoInvalidoException | IOException ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao buscar funcionário: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     private void adicionarFuncionario() {
         try {
-            String cpfPessoa = campoCPF.getText();
-            String nome = campoNome.getText();
-            String telefonePessoa = campoTelefone.getText();
-            String emailPessoa = campoEmail.getText();
-            String matriculaFuncional = campoMatriculaFuncional.getText();
-            String cargo = campoCargo.getText();
+            String nome = campoNome.getText().trim();
+            String cpf = campoCPF.getText().trim();
+            String telefone = campoTelefone.getText().trim();
+            String email = campoEmail.getText().trim();
+            String matriculaFuncional = campoMatriculaFuncional.getText().trim();
+            String cargo = campoCargo.getText().trim();
+
+            if (nome.isEmpty() || cpf.isEmpty() || matriculaFuncional.isEmpty() || cargo.isEmpty() || campoSalario.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Nome, CPF, Matrícula, Cargo e Salário são obrigatórios.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             double salario = 0.0;
             try {
-                salario = Double.parseDouble(campoSalario.getText());
+                salario = Double.parseDouble(campoSalario.getText().trim());
             } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Salário inválido. Use um número.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Salário inválido. Insira um valor numérico.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            Funcionario funcionario = new Funcionario(nome, cpfPessoa, telefonePessoa,
-                                                      emailPessoa, matriculaFuncional, cargo, salario);
-
+            Funcionario funcionario = new Funcionario(nome, cpf, telefone, email, matriculaFuncional, cargo, salario);
             fachada.adicionarFuncionario(funcionario);
             JOptionPane.showMessageDialog(this, "Funcionário adicionado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             limparCampos();
-            listarTodosFuncionarios();
-        } catch (DadoInvalidoException e) {
+            carregarFuncionariosNaTabela();
+        } catch (DadoInvalidoException | IOException e) {
             JOptionPane.showMessageDialog(this, "Erro ao adicionar funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ocorreu um erro inesperado: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
-    }
-
-    private void buscarFuncionario() {
-        try {
-            String matriculaFuncionalBusca = campoMatriculaFuncional.getText();
-
-            if (matriculaFuncionalBusca.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Informe a Matrícula Funcional para buscar.", "Campo Vazio", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            Funcionario funcionario = fachada.buscarFuncionario(matriculaFuncionalBusca);
-            exibirFuncionario(funcionario);
-        } catch (EntidadeNaoEncontradaException e) {
-            JOptionPane.showMessageDialog(this, "Funcionário não encontrado: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            limparCampos();
-        } catch (DadoInvalidoException e) {
-            JOptionPane.showMessageDialog(this, "Matrícula Funcional inválida: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ocorreu um erro inesperado: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
 
     private void atualizarFuncionario() {
         try {
-            String cpfPessoa = campoCPF.getText();
-            String nome = campoNome.getText();
-            String telefonePessoa = campoTelefone.getText();
-            String emailPessoa = campoEmail.getText();
-            String matriculaFuncional = campoMatriculaFuncional.getText();
-            String cargo = campoCargo.getText();
+            String nome = campoNome.getText().trim();
+            String cpf = campoCPF.getText().trim();
+            String telefone = campoTelefone.getText().trim();
+            String email = campoEmail.getText().trim();
+            String matriculaFuncional = campoMatriculaFuncional.getText().trim();
+            String cargo = campoCargo.getText().trim();
 
-            double salario = 0.0;
-            try {
-                salario = Double.parseDouble(campoSalario.getText());
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Salário inválido. Use um número.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+            if (nome.isEmpty() || cpf.isEmpty() || matriculaFuncional.isEmpty() || cargo.isEmpty() || campoSalario.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Todos os campos são obrigatórios para atualização.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            Funcionario funcionarioAtualizado = new Funcionario(nome, cpfPessoa, telefonePessoa,
-                                                                 emailPessoa, matriculaFuncional, cargo, salario);
+            double salario = 0.0;
+            try {
+                salario = Double.parseDouble(campoSalario.getText().trim());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Salário inválido. Insira um valor numérico.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            fachada.atualizarFuncionario(funcionarioAtualizado);
+            Funcionario funcionario = new Funcionario(nome, cpf, telefone, email, matriculaFuncional, cargo, salario);
+            fachada.atualizarFuncionario(funcionario);
             JOptionPane.showMessageDialog(this, "Funcionário atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             limparCampos();
-            listarTodosFuncionarios();
-        } catch (DadoInvalidoException | EntidadeNaoEncontradaException e) {
+            carregarFuncionariosNaTabela();
+        } catch (DadoInvalidoException | EntidadeNaoEncontradaException | IOException e) {
             JOptionPane.showMessageDialog(this, "Erro ao atualizar funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ocorreu um erro inesperado: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+        }
+    }
+
+    private void buscarFuncionario() {
+        String matricula = campoMatriculaFuncional.getText().trim();
+        if (matricula.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Insira uma matrícula para buscar.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            Funcionario funcionario = fachada.buscarFuncionario(matricula);
+            limparCampos();
+            campoNome.setText(funcionario.getNome());
+            campoCPF.setText(funcionario.getCpf());
+            campoTelefone.setText(funcionario.getTelefone());
+            campoEmail.setText(funcionario.getEmail());
+            campoMatriculaFuncional.setText(funcionario.getMatriculaFuncional());
+            campoCargo.setText(funcionario.getCargo());
+            campoSalario.setText(String.valueOf(funcionario.getSalario()));
+        } catch (EntidadeNaoEncontradaException | DadoInvalidoException | IOException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao buscar funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void deletarFuncionario() {
-        try {
-            String matriculaFuncional = campoMatriculaFuncional.getText();
-            if (matriculaFuncional.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Informe a Matrícula Funcional para deletar.", "Campo Vazio", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            int confirm = JOptionPane.showConfirmDialog(this,
-                    "Tem certeza que deseja deletar o funcionário com Matrícula Funcional " + matriculaFuncional + "?", "Confirmar Deleção",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        String matricula = campoMatriculaFuncional.getText().trim();
+        if (matricula.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Insira uma matrícula para deletar.", "Erro de Validação", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
-            if (confirm == JOptionPane.YES_OPTION) {
-                if (fachada.deletarFuncionario(matriculaFuncional)) {
-                    JOptionPane.showMessageDialog(this, "Funcionário deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    limparCampos();
-                    listarTodosFuncionarios();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Falha ao deletar funcionário. Verifique a Matrícula Funcional.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }
+        int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar este funcionário?", "Confirmar Deleção", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                fachada.deletarFuncionario(matricula);
+                JOptionPane.showMessageDialog(this, "Funcionário deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                limparCampos();
+                carregarFuncionariosNaTabela();
+            } catch (EntidadeNaoEncontradaException | DadoInvalidoException | IOException e) {
+                JOptionPane.showMessageDialog(this, "Erro ao deletar funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao deletar funcionário: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Ocorreu um erro inesperado: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
 
     private void limparCampos() {
-        campoCPF.setText("");
         campoNome.setText("");
+        campoCPF.setText("");
         campoTelefone.setText("");
         campoEmail.setText("");
         campoMatriculaFuncional.setText("");
         campoCargo.setText("");
         campoSalario.setText("");
-        areaResultados.setText("");
     }
 
-    private void listarTodosFuncionarios() {
+    private void carregarFuncionariosNaTabela() {
+        modeloTabela.setRowCount(0);
         try {
             List<Funcionario> funcionarios = fachada.listarTodosFuncionarios();
-            areaResultados.setText("");
-            if (funcionarios.isEmpty()) {
-                areaResultados.append("Nenhum funcionário cadastrado.\n");
-            } else {
-                areaResultados.append("--- Lista de Funcionários ---\n");
-                for (Funcionario f : funcionarios) {
-                    areaResultados.append("Matrícula Funcional: " + f.getMatriculaFuncional() +
-                                          ", Nome: " + f.getNome() +
-                                          ", CPF: " + f.getCpf() +
-                                          ", Telefone: " + f.getTelefone() +
-                                          ", Email: " + f.getEmail() +
-                                          ", Cargo: " + f.getCargo() +
-                                          ", Salário: " + String.format("%.2f", f.getSalario()) + "\n");
-                }
-                areaResultados.append("-----------------------------\n");
+            for (Funcionario funcionario : funcionarios) {
+                modeloTabela.addRow(new Object[]{
+                    funcionario.getMatriculaFuncional(),
+                    funcionario.getNome(),
+                    funcionario.getCargo(),
+                    funcionario.getSalario()
+                });
             }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erro ao listar funcionários: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
-    }
-
-    private void exibirFuncionario(Funcionario funcionario) {
-        if (funcionario != null) {
-            campoCPF.setText(funcionario.getCpf());
-            campoNome.setText(funcionario.getNome());
-            campoTelefone.setText(funcionario.getTelefone());
-            campoEmail.setText(funcionario.getEmail());
-            campoMatriculaFuncional.setText(funcionario.getMatriculaFuncional());
-            campoCargo.setText(funcionario.getCargo());
-            campoSalario.setText(String.format("%.2f", funcionario.getSalario()));
-
-            areaResultados.setText("Funcionário encontrado:\n" +
-                                   "Matrícula Funcional: " + funcionario.getMatriculaFuncional() + "\n" +
-                                   "Nome: " + funcionario.getNome() + "\n" +
-                                   "CPF: " + funcionario.getCpf() + "\n" +
-                                   "Telefone: " + funcionario.getTelefone() + "\n" +
-                                   "Email: " + funcionario.getEmail() + "\n" +
-                                   "Cargo: " + funcionario.getCargo() + "\n" +
-                                   "Salário: " + String.format("%.2f", funcionario.getSalario()) + "\n"
-            );
-        } else {
-            limparCampos();
-            areaResultados.setText("Funcionário não encontrado.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Erro ao carregar a lista de funcionários: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

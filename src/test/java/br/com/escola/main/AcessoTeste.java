@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
+
 public class AcessoTeste {
     public static void main(String[] args) {
         System.out.println("Teste");
@@ -16,14 +18,14 @@ public class AcessoTeste {
     private Acesso sistemaAcesso;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         sistemaAcesso = new Acesso();
         sistemaAcesso.removerUsuario("admin");
     }
 
     @Test
     @DisplayName("Deve criar um novo usuário com sucesso")
-    void deveCriarUsuarioComSucesso() {
+    void deveCriarUsuarioComSucesso() throws IOException {
         sistemaAcesso.criarUsuario("usuarioTeste", "senha123", "ALUNO");
         Usuario usuarioCriado = sistemaAcesso.autenticar("usuarioTeste", "senha123");
         assertNotNull(usuarioCriado);
@@ -33,9 +35,10 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Não deve criar usuário com nome de usuário já existente")
-    void naoDeveCriarUsuarioDuplicado() {
+    void naoDeveCriarUsuarioDuplicado() throws IOException {
         sistemaAcesso.criarUsuario("usuarioExistente", "senhaOriginal", "PROFESSOR");
-        sistemaAcesso.criarUsuario("usuarioExistente", "novaSenha", "ADMINISTRADOR");
+        assertThrows(IOException.class, () -> sistemaAcesso.criarUsuario("usuarioExistente", "novaSenha", "ADMINISTRADOR"));
+
         Usuario usuario = sistemaAcesso.autenticar("usuarioExistente", "senhaOriginal");
         assertNotNull(usuario);
         assertEquals("PROFESSOR", usuario.getPerfil());
@@ -44,7 +47,7 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Deve autenticar um usuário com credenciais corretas")
-    void deveAutenticarComCredenciaisCorretas() {
+    void deveAutenticarComCredenciaisCorretas() throws IOException {
         sistemaAcesso.criarUsuario("aluno1", "senhaAluno", "ALUNO");
         Usuario usuarioAutenticado = sistemaAcesso.autenticar("aluno1", "senhaAluno");
         assertNotNull(usuarioAutenticado);
@@ -53,7 +56,7 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Não deve autenticar com senha incorreta")
-    void naoDeveAutenticarComSenhaIncorreta() {
+    void naoDeveAutenticarComSenhaIncorreta() throws IOException {
         sistemaAcesso.criarUsuario("prof1", "senhaProf", "PROFESSOR");
         Usuario usuarioAutenticado = sistemaAcesso.autenticar("prof1", "senhaIncorreta");
         assertNull(usuarioAutenticado);
@@ -68,7 +71,7 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Deve redefinir a senha de um usuário com sucesso")
-    void deveRedefinirSenhaComSucesso() {
+    void deveRedefinirSenhaComSucesso() throws IOException {
         sistemaAcesso.criarUsuario("adminTeste", "senhaAntiga", "ADMINISTRADOR");
         boolean redefinido = sistemaAcesso.redefinirSenha("adminTeste", "novaSenhaForte");
         assertTrue(redefinido);
@@ -79,14 +82,14 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Não deve redefinir senha para usuário inexistente")
-    void naoDeveRedefinirSenhaUsuarioInexistente() {
+    void naoDeveRedefinirSenhaUsuarioInexistente() throws IOException {
         boolean redefinido = sistemaAcesso.redefinirSenha("naoExiste", "novaSenha");
         assertFalse(redefinido);
     }
 
     @Test
     @DisplayName("Administrador deve ter todas as permissões")
-    void adminDeveTerTodasAsPermissoes() {
+    void adminDeveTerTodasAsPermissoes() throws IOException {
         sistemaAcesso.criarUsuario("superadmin", "supersegura", "ADMINISTRADOR");
         Usuario admin = sistemaAcesso.autenticar("superadmin", "supersegura");
         assertNotNull(admin);
@@ -97,7 +100,7 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Professor deve ter permissões específicas")
-    void professorDeveTerPermissoesEspecificas() {
+    void professorDeveTerPermissoesEspecificas() throws IOException {
         sistemaAcesso.criarUsuario("professorJoao", "joao123", "PROFESSOR");
         Usuario professor = sistemaAcesso.autenticar("professorJoao", "joao123");
         assertNotNull(professor);
@@ -109,7 +112,7 @@ public class AcessoTeste {
 
     @Test
     @DisplayName("Perfil não reconhecido não deve ter permissão")
-    void perfilNaoReconhecidoNaoDeveTerPermissao() {
+    void perfilNaoReconhecidoNaoDeveTerPermissao() throws IOException {
         sistemaAcesso.criarUsuario("usuarioGenerico", "senhaGenerica", "ALUNO");
         Usuario generico = sistemaAcesso.autenticar("usuarioGenerico", "senhaGenerica");
         assertNotNull(generico);

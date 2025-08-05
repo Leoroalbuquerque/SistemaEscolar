@@ -1,11 +1,21 @@
 [ {
-  "id" : "AVA001",
-  "nomeAvaliacao" : "Prova de Matemática",
-  "dataInicio" : [ 2025, 11, 10 ],
-  "dataFim" : [ 2025, 11, 10 ],
+  "id" : "MAT02",
+  "nomeAvaliacao" : "PRIMEIRA UNIDADE",
+  "dataInicio" : [ 2025, 8, 4 ],
+  "dataFim" : [ 2025, 8, 4 ],
   "disciplina" : {
-    "codigo" : "MAT01",
-    "nome" : "Matemática Avançada",
-    "cargaHoraria" : 60
+    "codigo" : "MAT02",
+    "nome" : "matemática",
+    "cargaHoraria" : 0
+  }
+}, {
+  "id" : "MAT03",
+  "nomeAvaliacao" : "Teste3",
+  "dataInicio" : [ 2025, 8, 4 ],
+  "dataFim" : [ 2025, 8, 4 ],
+  "disciplina" : {
+    "codigo" : "MAT02",
+    "nome" : "matemática",
+    "cargaHoraria" : 0
   }
 } ]

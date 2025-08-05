@@ -14,7 +14,7 @@ import java.util.List;
 
 public class TelaCadastroResponsavel extends JDialog {
 
-    public JTextField campoCPF; // Tornando público para acesso de TelaCadastroAluno
+    public JTextField campoCPF;
     private JTextField campoNome;
     private JTextField campoTelefone;
     private JTextField campoEmail;
@@ -121,7 +121,7 @@ public class TelaCadastroResponsavel extends JDialog {
             String telefonePessoa = campoTelefone.getText();
             String emailPessoa = campoEmail.getText();
             String parentesco = campoParentesco.getText();
-            String cpfResponsavel = campoCPF.getText(); // Assumindo que o CPF da pessoa é o CPF do responsável
+            String cpfResponsavel = campoCPF.getText();
             boolean principal = checkPrincipal.isSelected();
 
             Responsavel responsavel = new Responsavel(nome, cpfPessoa, telefonePessoa,
@@ -174,11 +174,11 @@ public class TelaCadastroResponsavel extends JDialog {
             String telefonePessoa = campoTelefone.getText();
             String emailPessoa = campoEmail.getText();
             String parentesco = campoParentesco.getText();
-            String cpfResponsavel = campoCPF.getText(); // Assumindo que o CPF da pessoa é o CPF do responsável
+            String cpfResponsavel = campoCPF.getText();
             boolean principal = checkPrincipal.isSelected();
 
             Responsavel responsavelAtualizado = new Responsavel(nome, cpfPessoa, telefonePessoa,
-                                                                emailPessoa, parentesco, cpfResponsavel, principal);
+                                                               emailPessoa, parentesco, cpfResponsavel, principal);
 
             fachada.atualizarResponsavel(responsavelAtualizado);
             JOptionPane.showMessageDialog(this, "Responsável atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
@@ -204,17 +204,14 @@ public class TelaCadastroResponsavel extends JDialog {
                 return;
             }
             int confirm = JOptionPane.showConfirmDialog(this,
-                    "Tem certeza que deseja deletar o responsável com CPF " + cpf + "?", "Confirmar Deleção",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            "Tem certeza que deseja deletar o responsável com CPF " + cpf + "?", "Confirmar Deleção",
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
             if (confirm == JOptionPane.YES_OPTION) {
-                if (fachada.deletarResponsavel(cpf)) {
-                    JOptionPane.showMessageDialog(this, "Responsável deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    limparCampos();
-                    listarTodosResponsaveis();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Falha ao deletar responsável. Verifique o CPF.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }
+                fachada.deletarResponsavel(cpf); // Alterado aqui: remove o 'if' statement
+                JOptionPane.showMessageDialog(this, "Responsável deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                limparCampos();
+                listarTodosResponsaveis();
             }
         } catch (EntidadeNaoEncontradaException | DadoInvalidoException e) {
             JOptionPane.showMessageDialog(this, "Erro ao deletar responsável: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);

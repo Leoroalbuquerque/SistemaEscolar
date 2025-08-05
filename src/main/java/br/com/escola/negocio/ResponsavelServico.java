@@ -4,8 +4,8 @@ import br.com.escola.dados.IRepositorio;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ResponsavelServico {
@@ -16,7 +16,7 @@ public class ResponsavelServico {
         this.responsavelRepositorio = responsavelRepositorio;
     }
 
-    public void adicionarResponsavel(Responsavel responsavel) throws DadoInvalidoException {
+    public void adicionarResponsavel(Responsavel responsavel) throws DadoInvalidoException, IOException, EntidadeNaoEncontradaException {
         if (responsavel == null) {
             throw new DadoInvalidoException("Responsável não pode ser nulo.");
         }
@@ -30,22 +30,22 @@ public class ResponsavelServico {
             throw new DadoInvalidoException("Formato de CPF do responsável inválido. Esperado 11 dígitos ou 999.999.999-99.");
         }
         
-        if (responsavelRepositorio.buscarPorId(responsavel.getCpfResponsavel()).isPresent()) {
+        try {
+            responsavelRepositorio.buscarPorId(responsavel.getCpfResponsavel());
             throw new DadoInvalidoException("Já existe um responsável cadastrado com o CPF: " + responsavel.getCpfResponsavel());
+        } catch (EntidadeNaoEncontradaException e) {
+            responsavelRepositorio.salvar(responsavel);
         }
-
-        responsavelRepositorio.salvar(responsavel);
     }
 
-    public Responsavel buscarResponsavel(String cpfResponsavel) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public Responsavel buscarResponsavel(String cpfResponsavel) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (cpfResponsavel == null || cpfResponsavel.trim().isEmpty()) {
             throw new DadoInvalidoException("CPF para busca não pode ser nulo ou vazio.");
         }
-        return responsavelRepositorio.buscarPorId(cpfResponsavel)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Responsável com CPF " + cpfResponsavel + " não encontrado."));
+        return responsavelRepositorio.buscarPorId(cpfResponsavel);
     }
 
-    public void atualizarResponsavel(Responsavel responsavel) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizarResponsavel(Responsavel responsavel) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         if (responsavel == null) {
             throw new DadoInvalidoException("Responsável não pode ser nulo para atualização.");
         }
@@ -58,28 +58,24 @@ public class ResponsavelServico {
         if (!responsavel.getCpfResponsavel().matches("\\d{11}|\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}")) {
             throw new DadoInvalidoException("Formato de CPF do responsável inválido. Esperado 11 dígitos ou 999.999.999-99.");
         }
-        if (responsavelRepositorio.buscarPorId(responsavel.getCpfResponsavel()).isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Responsável com CPF " + responsavel.getCpfResponsavel() + " não encontrado para atualização.");
-        }
-
+        
+        responsavelRepositorio.buscarPorId(responsavel.getCpfResponsavel());
         responsavelRepositorio.atualizar(responsavel);
     }
 
-    public boolean deletarResponsavel(String cpfResponsavel) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletarResponsavel(String cpfResponsavel) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (cpfResponsavel == null || cpfResponsavel.trim().isEmpty()) {
             throw new DadoInvalidoException("CPF para deleção não pode ser nulo ou vazio.");
         }
-        if (responsavelRepositorio.buscarPorId(cpfResponsavel).isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Responsável com CPF " + cpfResponsavel + " não encontrado para deleção.");
-        }
-        return responsavelRepositorio.deletar(cpfResponsavel);
+        responsavelRepositorio.buscarPorId(cpfResponsavel);
+        responsavelRepositorio.deletar(cpfResponsavel);
     }
 
-    public List<Responsavel> listarTodosResponsaveis() {
+    public List<Responsavel> listarTodosResponsaveis() throws IOException {
         return responsavelRepositorio.listarTodos();
     }
 
-    public List<Responsavel> buscarResponsaveisPrincipais() {
+    public List<Responsavel> buscarResponsaveisPrincipais() throws IOException {
         return responsavelRepositorio.listarTodos().stream()
                 .filter(Responsavel::isPrincipal)
                 .collect(Collectors.toList());

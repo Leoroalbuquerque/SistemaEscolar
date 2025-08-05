@@ -1,43 +1,54 @@
 package br.com.escola.negocio;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import br.com.escola.dados.UsuarioRepositorioJson;
+import java.io.IOException;
+import java.util.Optional;
 
 public class Acesso {
-    private Map<String, Usuario> usuarios;
+
+    private UsuarioRepositorioJson usuarioRepositorio;
 
     public Acesso() {
-        this.usuarios = new HashMap<>();
-        criarUsuario("admin", "admin123", "ADMINISTRADOR");
+        this.usuarioRepositorio = new UsuarioRepositorioJson();
+        if (usuarioRepositorio.buscarPorNomeUsuario("admin").isEmpty()) {
+            criarUsuarioInterno("admin", "admin123", "ADMINISTRADOR");
+        }
     }
 
-    public boolean criarUsuario(String nomeUsuario, String senha, String perfil) {
-        if (usuarios.containsKey(nomeUsuario)) {
-            System.out.println("Erro: Usuário '" + nomeUsuario + "' já existe.");
-            return false;
-        }
-        Usuario novoUsuario = new Usuario(nomeUsuario, senha, perfil);
-        usuarios.put(nomeUsuario, novoUsuario);
-        System.out.println("Usuário '" + nomeUsuario + "' criado com perfil '" + perfil + "'.");
+    public boolean criarUsuario(String nomeUsuario, String senha, String perfil) throws IOException {
+        usuarioRepositorio.salvar(new Usuario(nomeUsuario, senha, perfil));
         return true;
     }
 
+    private boolean criarUsuarioInterno(String nomeUsuario, String senha, String perfil) {
+        try {
+            usuarioRepositorio.salvar(new Usuario(nomeUsuario, senha, perfil));
+            return true;
+        } catch (IOException e) {
+            System.err.println("Erro ao criar usuário interno (admin): " + e.getMessage());
+            return false;
+        }
+    }
+
     public Usuario autenticar(String nomeUsuario, String senha) {
-        Usuario usuario = usuarios.get(nomeUsuario);
-        if (usuario != null && usuario.getSenhaCriptografada().equals(senha)) {
-            System.out.println("Usuário '" + nomeUsuario + "' autenticado com sucesso.");
-            return usuario;
+        Optional<Usuario> usuarioOpt = usuarioRepositorio.buscarPorNomeUsuario(nomeUsuario);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            if (usuario.getSenhaCriptografada().equals(senha)) {
+                System.out.println("Usuário '" + nomeUsuario + "' autenticado com sucesso.");
+                return usuario;
+            }
         }
         System.out.println("Falha na autenticação para o usuário '" + nomeUsuario + "'.");
         return null;
     }
 
-    public boolean redefinirSenha(String nomeUsuario, String novaSenha) {
-        Usuario usuario = usuarios.get(nomeUsuario);
-        if (usuario != null) {
+    public boolean redefinirSenha(String nomeUsuario, String novaSenha) throws IOException {
+        Optional<Usuario> usuarioOpt = usuarioRepositorio.buscarPorNomeUsuario(nomeUsuario);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
             usuario.setSenhaCriptografada(novaSenha);
+            usuarioRepositorio.atualizar(usuario);
             System.out.println("Senha do usuário '" + nomeUsuario + "' redefinida com sucesso.");
             return true;
         }
@@ -45,14 +56,14 @@ public class Acesso {
         return false;
     }
 
-    public boolean removerUsuario(String nomeUsuario) {
-        if (usuarios.containsKey(nomeUsuario)) {
-            usuarios.remove(nomeUsuario);
+    public boolean removerUsuario(String nomeUsuario) throws IOException {
+        boolean removido = usuarioRepositorio.deletar(nomeUsuario);
+        if (removido) {
             System.out.println("Usuário '" + nomeUsuario + "' removido com sucesso.");
-            return true;
+        } else {
+            System.out.println("Usuário '" + nomeUsuario + "' não encontrado para remoção.");
         }
-        System.out.println("Usuário '" + nomeUsuario + "' não encontrado para remoção.");
-        return false;
+        return removido;
     }
 
     public boolean checarPermissao(Usuario usuario, String funcionalidade) {
@@ -60,23 +71,19 @@ public class Acesso {
             return false;
         }
 
-        Set<String> permissoes = new HashSet<>();
         switch (usuario.getPerfil()) {
             case "ADMINISTRADOR":
                 return true;
             case "PROFESSOR":
-                permissoes.add("LANÇAR_NOTAS");
-                permissoes.add("LANÇAR_FREQUENCIA");
-                permissoes.add("VISUALIZAR_ALUNOS");
-                break;
+                return funcionalidade.equals("LANÇAR_NOTAS") ||
+                       funcionalidade.equals("LANÇAR_FREQUENCIA") ||
+                       funcionalidade.equals("VISUALIZAR_ALUNOS");
             case "ALUNO":
-                permissoes.add("VISUALIZAR_NOTAS");
-                permissoes.add("VISUALIZAR_FREQUENCIA");
-                permissoes.add("VISUALIZAR_PROFESSORES");
-                break;
+                return funcionalidade.equals("VISUALIZAR_NOTAS") ||
+                       funcionalidade.equals("VISUALIZAR_FREQUENCIA") ||
+                       funcionalidade.equals("VISUALIZAR_PROFESSORES");
             default:
-                break;
+                return false;
         }
-        return permissoes.contains(funcionalidade);
     }
 }

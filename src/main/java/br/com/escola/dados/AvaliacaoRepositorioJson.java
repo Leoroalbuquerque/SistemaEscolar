@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AvaliacaoRepositorioJson implements IRepositorio<Avaliacao, String> {
@@ -41,55 +40,64 @@ public class AvaliacaoRepositorioJson implements IRepositorio<Avaliacao, String>
         return new ArrayList<>();
     }
 
-    private void salvarDados() {
+    private void salvarDados() throws IOException {
         try {
             objectMapper.writeValue(new File(CAMINHO_ARQUIVO), avaliacoes);
         } catch (IOException e) {
             System.err.println("Erro ao salvar dados de avaliações: " + e.getMessage());
+            throw e;
         }
     }
 
     @Override
-    public void salvar(Avaliacao avaliacao) throws DadoInvalidoException {
+    public void salvar(Avaliacao avaliacao) throws DadoInvalidoException, IOException {
         if (avaliacao == null) {
             throw new DadoInvalidoException("Avaliação não pode ser nula.");
         }
-        if (buscarPorId(avaliacao.getId()).isPresent()) {
-            throw new DadoInvalidoException("Avaliação com ID " + avaliacao.getId() + " já existe.");
+        try {
+            if (buscarPorId(avaliacao.getId()) != null) {
+                throw new DadoInvalidoException("Avaliação com ID " + avaliacao.getId() + " já existe.");
+            }
+        } catch (EntidadeNaoEncontradaException e) {
         }
         avaliacoes.add(avaliacao);
         salvarDados();
     }
 
     @Override
-    public Optional<Avaliacao> buscarPorId(String id) {
+    public Avaliacao buscarPorId(String id) throws IOException, EntidadeNaoEncontradaException {
         return avaliacoes.stream()
                 .filter(a -> a.getId().equals(id))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Avaliação com ID " + id + " não encontrada."));
     }
 
     @Override
-    public List<Avaliacao> listarTodos() {
+    public List<Avaliacao> listarTodos() throws IOException {
         return new ArrayList<>(avaliacoes);
     }
 
     @Override
-    public void atualizar(Avaliacao avaliacao) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void atualizar(Avaliacao avaliacao) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (avaliacao == null) {
-            throw new DadoInvalidoException("Avaliação não pode ser nula.");
+            throw new DadoInvalidoException("Avaliação não pode ser nula para atualização.");
         }
-        Optional<Avaliacao> existenteOpt = buscarPorId(avaliacao.getId());
-        if (existenteOpt.isEmpty()) {
+        boolean encontrada = false;
+        for (int i = 0; i < avaliacoes.size(); i++) {
+            if (avaliacoes.get(i).getId().equals(avaliacao.getId())) {
+                avaliacoes.set(i, avaliacao);
+                encontrada = true;
+                break;
+            }
+        }
+        if (!encontrada) {
             throw new EntidadeNaoEncontradaException("Avaliação com ID " + avaliacao.getId() + " não encontrada para atualização.");
         }
-        avaliacoes = avaliacoes.stream()
-                .map(a -> a.getId().equals(avaliacao.getId()) ? avaliacao : a)
-                .collect(Collectors.toList());
         salvarDados();
     }
 
     @Override
-    public boolean deletar(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (id == null || id.isEmpty()) {
             throw new DadoInvalidoException("ID da avaliação não pode ser nulo ou vazio.");
         }
@@ -98,11 +106,10 @@ public class AvaliacaoRepositorioJson implements IRepositorio<Avaliacao, String>
             throw new EntidadeNaoEncontradaException("Avaliação com ID " + id + " não encontrada para exclusão.");
         }
         salvarDados();
-        return removido;
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         avaliacoes.clear();
         salvarDados();
     }

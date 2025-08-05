@@ -15,8 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
 
@@ -47,26 +45,34 @@ public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
         }
     }
 
-    private void salvarDados() {
+    private void salvarDados() throws IOException {
         try {
             objectMapper.writeValue(new File(NOME_ARQUIVO), turmas);
         } catch (IOException e) {
             System.err.println("Erro ao salvar dados no arquivo " + NOME_ARQUIVO + ": " + e.getMessage());
+            throw e;
         }
     }
 
     @Override
-    public void salvar(Turma entidade) throws DadoInvalidoException {
+    public void salvar(Turma entidade) throws DadoInvalidoException, IOException {
         if (entidade == null || entidade.getCodigo() == null || entidade.getCodigo().trim().isEmpty()) {
             throw new DadoInvalidoException("Turma ou código da turma não pode ser nulo ou vazio.");
         }
-        boolean existe = turmas.stream()
-                .anyMatch(t -> t.getCodigo().equals(entidade.getCodigo()));
-        if (existe) {
+        try {
+            buscarPorId(entidade.getCodigo());
             throw new DadoInvalidoException("Já existe uma turma com o código: " + entidade.getCodigo());
+        } catch (EntidadeNaoEncontradaException e) {
         }
+        
         if (entidade.getNomeTurma() == null || entidade.getNomeTurma().trim().isEmpty()) {
             throw new DadoInvalidoException("Nome da turma é obrigatório.");
+        }
+        if (entidade.getSerieEscolar() == null || entidade.getSerieEscolar().getCodigoSerie() == null || entidade.getSerieEscolar().getCodigoSerie().trim().isEmpty()) {
+            throw new DadoInvalidoException("Série escolar é obrigatória.");
+        }
+        if (entidade.getTurno() == null || entidade.getTurno().trim().isEmpty()) {
+            throw new DadoInvalidoException("Turno da turma é obrigatório.");
         }
 
         this.turmas.add(entidade);
@@ -74,56 +80,66 @@ public class TurmaRepositorioJson implements IRepositorio<Turma, String> {
     }
 
     @Override
-    public Optional<Turma> buscarPorId(String id) {
+    public Turma buscarPorId(String id) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (id == null || id.trim().isEmpty()) {
-            return Optional.empty();
+            throw new DadoInvalidoException("ID para busca não pode ser nulo ou vazio.");
         }
         return turmas.stream()
                 .filter(t -> t.getCodigo().equals(id))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Turma com código " + id + " não encontrada."));
     }
 
     @Override
-    public void atualizar(Turma entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizar(Turma entidade) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (entidade == null || entidade.getCodigo() == null || entidade.getCodigo().trim().isEmpty()) {
             throw new DadoInvalidoException("Turma ou código da turma não pode ser nulo para atualização.");
         }
         if (entidade.getNomeTurma() == null || entidade.getNomeTurma().trim().isEmpty()) {
             throw new DadoInvalidoException("Nome da turma é obrigatório para atualização.");
         }
+        if (entidade.getSerieEscolar() == null || entidade.getSerieEscolar().getCodigoSerie() == null || entidade.getSerieEscolar().getCodigoSerie().trim().isEmpty()) {
+            throw new DadoInvalidoException("Série escolar é obrigatória para atualização.");
+        }
+        if (entidade.getTurno() == null || entidade.getTurno().trim().isEmpty()) {
+            throw new DadoInvalidoException("Turno da turma é obrigatório para atualização.");
+        }
 
-        Optional<Turma> turmaExistenteOpt = buscarPorId(entidade.getCodigo());
-        if (turmaExistenteOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Turma com código " + entidade.getCodigo() + " não encontrada para atualização.");
+        boolean encontrada = false;
+        for (int i = 0; i < turmas.size(); i++) {
+            if (turmas.get(i).getCodigo().equals(entidade.getCodigo())) {
+                turmas.set(i, entidade);
+                encontrada = true;
+                break;
+            }
         }
         
-        turmas.removeIf(t -> t.getCodigo().equals(entidade.getCodigo()));
-        this.turmas.add(entidade);
+        if (!encontrada) {
+            throw new EntidadeNaoEncontradaException("Turma com código " + entidade.getCodigo() + " não encontrada para atualização.");
+        }
         salvarDados();
     }
 
     @Override
-    public boolean deletar(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String id) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (id == null || id.trim().isEmpty()) {
             throw new DadoInvalidoException("ID para deleção não pode ser nulo ou vazio.");
         }
         boolean removido = turmas.removeIf(t -> t.getCodigo().equals(id));
         if (!removido) {
-            throw new EntidadeNaoEncontradaException("Turma com código " + id + " não encontrada para deleção.");
+            throw new EntidadeNaoEncontradaException("Turma com código " + id + " não encontrada para exclusão.");
         }
         salvarDados();
-        return true;
     }
 
     @Override
-    public List<Turma> listarTodos() {
+    public List<Turma> listarTodos() throws IOException {
         return new ArrayList<>(turmas);
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         this.turmas.clear();
         salvarDados();
-        System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

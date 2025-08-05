@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Turma implements Serializable {
@@ -14,29 +15,27 @@ public class Turma implements Serializable {
     private String codigo;
     private String nomeTurma;
     private int anoLetivo;
-    private Professor professorResponsavel;
+    private SerieEscolar serieEscolar;
+    private String turno;
 
+    @JsonManagedReference("turma-disciplinas")
     private List<DisciplinaTurma> atribuicoesDisciplinaTurma;
     private List<Aluno> alunosMatriculados;
+    private List<Professor> professoresAssociados;
 
     public Turma() {
         this.atribuicoesDisciplinaTurma = new ArrayList<>();
         this.alunosMatriculados = new ArrayList<>();
+        this.professoresAssociados = new ArrayList<>();
     }
 
-    public Turma(String codigo, String nomeTurma, int anoLetivo) {
+    public Turma(String codigo, String nomeTurma, int anoLetivo, SerieEscolar serieEscolar, String turno) {
         this();
         this.codigo = codigo;
         this.nomeTurma = nomeTurma;
         this.anoLetivo = anoLetivo;
-    }
-
-    public Turma(String codigo, String nomeTurma, int anoLetivo, Professor professorResponsavel) {
-        this();
-        this.codigo = codigo;
-        this.nomeTurma = nomeTurma;
-        this.anoLetivo = anoLetivo;
-        this.professorResponsavel = professorResponsavel;
+        this.serieEscolar = serieEscolar;
+        this.turno = turno;
     }
 
     public String getCodigo() {
@@ -63,12 +62,34 @@ public class Turma implements Serializable {
         this.anoLetivo = anoLetivo;
     }
 
-    public Professor getProfessorResponsavel() {
-        return professorResponsavel;
+    public SerieEscolar getSerieEscolar() {
+        return serieEscolar;
     }
 
-    public void setProfessorResponsavel(Professor professorResponsavel) {
-        this.professorResponsavel = professorResponsavel;
+    public void setSerieEscolar(SerieEscolar serieEscolar) {
+        this.serieEscolar = serieEscolar;
+    }
+
+    public String getTurno() {
+        return turno;
+    }
+
+    public void setTurno(String turno) {
+        this.turno = turno;
+    }
+
+    public List<Professor> getProfessoresAssociados() {
+        return new ArrayList<>(professoresAssociados);
+    }
+
+    public void adicionarProfessor(Professor professor) {
+        if (professor != null && !this.professoresAssociados.contains(professor)) {
+            this.professoresAssociados.add(professor);
+        }
+    }
+
+    public void removerProfessor(Professor professor) {
+        this.professoresAssociados.remove(professor);
     }
 
     public List<DisciplinaTurma> getAtribuicoesDisciplinaTurma() {
@@ -125,6 +146,8 @@ public class Turma implements Serializable {
                 "codigo='" + codigo + '\'' +
                 ", nomeTurma='" + nomeTurma + '\'' +
                 ", anoLetivo=" + anoLetivo +
+                ", serieEscolar=" + (serieEscolar != null ? serieEscolar.getCodigoSerie() : "N/A") +
+                ", turno='" + turno + '\'' +
                 '}';
     }
 }

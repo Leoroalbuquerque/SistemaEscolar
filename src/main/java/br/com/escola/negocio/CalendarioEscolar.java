@@ -1,11 +1,14 @@
 package br.com.escola.negocio;
 
+import br.com.escola.excecoes.EntidadeNaoEncontradaException;
+import br.com.escola.util.EventoCalendario;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CalendarioEscolar implements Serializable {
@@ -15,11 +18,13 @@ public class CalendarioEscolar implements Serializable {
     private List<LocalDate> datasLetivas;
     private List<LocalDate> feriados;
     private List<Avaliacao> avaliacoes;
+    private List<EventoCalendario> eventos;
 
     public CalendarioEscolar() {
         this.datasLetivas = new ArrayList<>();
         this.feriados = new ArrayList<>();
         this.avaliacoes = new ArrayList<>();
+        this.eventos = new ArrayList<>();
     }
 
     public CalendarioEscolar(int anoLetivo) {
@@ -59,6 +64,14 @@ public class CalendarioEscolar implements Serializable {
         this.avaliacoes = avaliacoes;
     }
 
+    public List<EventoCalendario> getEventos() {
+        return eventos;
+    }
+
+    public void setEventos(List<EventoCalendario> eventos) {
+        this.eventos = eventos;
+    }
+
     public void adicionarDataLetiva(LocalDate data) {
         if (data != null && !this.datasLetivas.contains(data)) {
             this.datasLetivas.add(data);
@@ -94,6 +107,19 @@ public class CalendarioEscolar implements Serializable {
             this.avaliacoes.remove(avaliacao);
         }
     }
+    
+    public void adicionarEvento(EventoCalendario evento) {
+        if (evento != null) {
+            this.eventos.add(evento);
+        }
+    }
+    
+    public void removerEventoPorId(String id) throws EntidadeNaoEncontradaException {
+        boolean removido = this.eventos.removeIf(evento -> evento.getId().equals(id));
+        if (!removido) {
+            throw new EntidadeNaoEncontradaException("Evento com ID " + id + " não encontrado.");
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -115,6 +141,7 @@ public class CalendarioEscolar implements Serializable {
                 ", datasLetivas=" + datasLetivas.size() + " datas" +
                 ", feriados=" + feriados.size() + " feriados" +
                 ", avaliacoes=" + avaliacoes.size() + " avaliações" +
+                ", eventos=" + eventos.size() + " eventos" +
                 '}';
     }
 }

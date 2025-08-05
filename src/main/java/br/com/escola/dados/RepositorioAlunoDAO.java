@@ -3,9 +3,10 @@ package br.com.escola.dados;
 import br.com.escola.negocio.Aluno;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import br.com.escola.excecoes.DadoInvalidoException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 public class RepositorioAlunoDAO implements IRepositorio<Aluno, String> {
 
@@ -16,66 +17,67 @@ public class RepositorioAlunoDAO implements IRepositorio<Aluno, String> {
     }
 
     @Override
-    public void salvar(Aluno entidade) throws DadoInvalidoException {
+    public void salvar(Aluno entidade) throws DadoInvalidoException, IOException {
         if (entidade == null || entidade.getMatricula() == null || entidade.getMatricula().trim().isEmpty()) {
-            throw new DadoInvalidoException("Aluno ou matrícula não pode ser nulo/vazio para salvar (DAO de teste).");
+            throw new DadoInvalidoException("Aluno ou matrícula não pode ser nulo/vazio para salvar.");
         }
-        if (buscarPorId(entidade.getMatricula()).isPresent()) {
-            throw new DadoInvalidoException("Aluno com matrícula " + entidade.getMatricula() + " já existe (DAO de teste).");
+        try {
+            buscarPorId(entidade.getMatricula());
+            throw new DadoInvalidoException("Aluno com matrícula " + entidade.getMatricula() + " já existe.");
+        } catch (EntidadeNaoEncontradaException e) {
+            this.alunosEmMemoria.add(entidade);
         }
-        this.alunosEmMemoria.add(entidade);
-        System.out.println("DEBUG: Aluno salvo em memória (DAO de teste): " + entidade.getNome() + " - " + entidade.getMatricula());
     }
 
     @Override
-    public Optional<Aluno> buscarPorId(String id) {
+    public Aluno buscarPorId(String id) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (id == null || id.trim().isEmpty()) {
-            return Optional.empty();
+            throw new DadoInvalidoException("Matrícula para busca não pode ser nula ou vazia.");
         }
-        Optional<Aluno> encontrado = this.alunosEmMemoria.stream()
-                                         .filter(a -> a.getMatricula() != null && a.getMatricula().equals(id))
-                                         .findFirst();
-        System.out.println("DEBUG: Buscando aluno em memória (DAO de teste): " + id + " -> " + (encontrado.isPresent() ? "Encontrado" : "Não encontrado"));
-        return encontrado;
+        return this.alunosEmMemoria.stream()
+                .filter(a -> Objects.equals(a.getMatricula(), id))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno com matrícula " + id + " não encontrado."));
     }
 
     @Override
-    public void atualizar(Aluno entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizar(Aluno entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         if (entidade == null || entidade.getMatricula() == null || entidade.getMatricula().trim().isEmpty()) {
-            throw new DadoInvalidoException("Aluno ou matrícula não pode ser nulo/vazio para atualizar (DAO de teste).");
+            throw new DadoInvalidoException("Aluno ou matrícula não pode ser nulo/vazio para atualizar.");
         }
-        Optional<Aluno> existenteOpt = buscarPorId(entidade.getMatricula());
-        if (existenteOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + entidade.getMatricula() + " não encontrado para atualização (DAO de teste).");
+        
+        boolean encontrada = false;
+        for (int i = 0; i < alunosEmMemoria.size(); i++) {
+            if (Objects.equals(alunosEmMemoria.get(i).getMatricula(), entidade.getMatricula())) {
+                alunosEmMemoria.set(i, entidade);
+                encontrada = true;
+                break;
+            }
         }
 
-        this.alunosEmMemoria.removeIf(a -> a.getMatricula() != null && a.getMatricula().equals(entidade.getMatricula()));
-        this.alunosEmMemoria.add(entidade);
-        System.out.println("DEBUG: Aluno atualizado em memória (DAO de teste): " + entidade.getNome() + " - " + entidade.getMatricula());
+        if (!encontrada) {
+            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + entidade.getMatricula() + " não encontrado para atualização.");
+        }
     }
 
     @Override
-    public boolean deletar(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (id == null || id.trim().isEmpty()) {
-            throw new DadoInvalidoException("Matrícula não pode ser nula/vazia para deletar (DAO de teste).");
+            throw new DadoInvalidoException("Matrícula não pode ser nula/vazia para deletar.");
         }
-        boolean removido = this.alunosEmMemoria.removeIf(a -> a.getMatricula() != null && a.getMatricula().equals(id));
+        boolean removido = this.alunosEmMemoria.removeIf(a -> Objects.equals(a.getMatricula(), id));
         if (!removido) {
-            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + id + " não encontrado para deleção (DAO de teste).");
+            throw new EntidadeNaoEncontradaException("Aluno com matrícula " + id + " não encontrado para exclusão.");
         }
-        System.out.println("DEBUG: Aluno deletado em memória (DAO de teste): " + id + " -> " + removido);
-        return removido;
     }
 
     @Override
-    public List<Aluno> listarTodos() {
-        System.out.println("DEBUG: Listando todos os alunos em memória (DAO de teste). Total: " + this.alunosEmMemoria.size());
+    public List<Aluno> listarTodos() throws IOException {
         return new ArrayList<>(this.alunosEmMemoria);
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         this.alunosEmMemoria.clear();
-        System.out.println("DEBUG: Repositório de alunos em memória limpo (DAO de teste).");
     }
 }

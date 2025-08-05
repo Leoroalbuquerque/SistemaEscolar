@@ -1,1 +1,65 @@
-[]
+[
+  {
+    "data": "2025-08-02",
+    "presenca": false,
+    "disciplina": {
+      "codigo": "CIE01",
+      "nome": "ciências",
+      "cargaHoraria": 0
+    },
+    "aluno": {
+      "matricula": "1234567",
+      "anoLetivo": 2026,
+      "cpfsResponsaveis": [
+        "12345678910"
+      ],
+      "dataNascimento": "2014-10-09",
+      "nome": "pedro",
+      "cpf": "1234567",
+      "telefone": "sem_telefone_aluno",
+      "email": "sem_email_aluno"
+    }
+  },
+  {
+    "data": "2025-08-04",
+    "presenca": true,
+    "disciplina": {
+      "codigo": "MAT02",
+      "nome": "matemática",
+      "cargaHoraria": 0
+    },
+    "aluno": {
+      "matricula": "0123456",
+      "anoLetivo": 2026,
+      "cpfsResponsaveis": [
+        "87654321032"
+      ],
+      "dataNascimento": "2015-01-01",
+      "nome": "roberto filho",
+      "cpf": "0123456",
+      "telefone": "sem_telefone_aluno",
+      "email": "sem_email_aluno"
+    }
+  },
+  {
+    "data": "2025-08-04",
+    "presenca": true,
+    "disciplina": {
+      "codigo": "MAT02",
+      "nome": "matemática",
+      "cargaHoraria": 0
+    },
+    "aluno": {
+      "matricula": "1234567",
+      "anoLetivo": 2026,
+      "cpfsResponsaveis": [
+        "12345678910"
+      ],
+      "dataNascimento": "2014-10-09",
+      "nome": "pedro",
+      "cpf": "1234567",
+      "telefone": "sem_telefone_aluno",
+      "email": "sem_email_aluno"
+    }
+  }
+]

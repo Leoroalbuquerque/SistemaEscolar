@@ -1,474 +1,359 @@
 package br.com.escola.gui;
 
 import br.com.escola.negocio.CalendarioEscolar;
+import br.com.escola.negocio.Evento;
 import br.com.escola.negocio.Avaliacao;
 import br.com.escola.negocio.Fachada;
 import br.com.escola.negocio.IFachada;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
+import br.com.escola.util.EventoCalendario;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.List;
-import java.util.Set; // Não está sendo usado diretamente, mas pode ser útil para Sets no futuro.
-import java.util.TreeSet; // Não está sendo usado diretamente, mas pode ser útil para Sets no futuro.
+import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class TelaCalendarioEscolar extends JDialog {
-
     private IFachada fachada;
-
-    private JTextField campoAnoLetivo;
-    private JTextArea areaResultados;
-
-    // Painel de Datas Letivas
-    private JTextField campoDataLetiva;
-    private JList<LocalDate> listaDatasLetivas;
-    private DefaultListModel<LocalDate> modeloDatasLetivas;
-
-    // Painel de Feriados
-    private JTextField campoFeriado;
-    private JList<LocalDate> listaFeriados;
-    private DefaultListModel<LocalDate> modeloFeriados;
-
-    // Painel de Avaliações
-    private JComboBox<Avaliacao> comboAvaliacoesDisponiveis;
-    private JList<Avaliacao> listaAvaliacoesNoCalendario;
-    private DefaultListModel<Avaliacao> modeloAvaliacoesNoCalendario;
-
+    private int anoAtual;
+    private int mesAtual;
+    private JLabel labelMesAno;
+    private JPanel painelCalendario;
+    private CalendarioEscolar calendarioAtual;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final Locale LOCALE_PT_BR = new Locale("pt", "BR");
 
     public TelaCalendarioEscolar(JFrame parent, boolean modal) {
         super(parent, "Gerenciamento de Calendário Escolar", modal);
         this.fachada = Fachada.getInstance();
-
         setSize(800, 700);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout(10, 10));
-
-        JPanel painelSuperior = new JPanel(new GridLayout(1, 2, 10, 10));
-        painelSuperior.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10));
-        painelSuperior.add(new JLabel("Ano Letivo do Calendário:"));
-        campoAnoLetivo = new JTextField();
-        painelSuperior.add(campoAnoLetivo);
-        add(painelSuperior, BorderLayout.NORTH);
-
-        JPanel painelBotoesCRUD = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        JButton btnAdicionarCalendario = new JButton("Adicionar Calendário");
-        JButton btnBuscarCalendario = new JButton("Buscar Calendário");
-        JButton btnAtualizarCalendario = new JButton("Atualizar Calendário");
-        JButton btnDeletarCalendario = new JButton("Deletar Calendário");
-        JButton btnLimpar = new JButton("Limpar Campos");
-        JButton btnListarTodos = new JButton("Listar Todos");
-
-        painelBotoesCRUD.add(btnAdicionarCalendario);
-        painelBotoesCRUD.add(btnBuscarCalendario);
-        painelBotoesCRUD.add(btnAtualizarCalendario);
-        painelBotoesCRUD.add(btnDeletarCalendario);
-        painelBotoesCRUD.add(btnLimpar);
-        painelBotoesCRUD.add(btnListarTodos);
-
-        // Adiciona o painel de botões CRUD abaixo do campo de ano letivo
-        JPanel painelCentralSuperior = new JPanel(new BorderLayout());
-        painelCentralSuperior.add(painelSuperior, BorderLayout.NORTH);
-        painelCentralSuperior.add(painelBotoesCRUD, BorderLayout.CENTER);
-        add(painelCentralSuperior, BorderLayout.NORTH);
-
-
-        JTabbedPane abasGerenciamento = new JTabbedPane();
-
-        // Aba 1: Datas Letivas
-        JPanel painelDatasLetivas = new JPanel(new BorderLayout(5, 5));
-        painelDatasLetivas.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        
-        JPanel pnlInputDataLetiva = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlInputDataLetiva.add(new JLabel("Data Letiva (AAAA-MM-DD):"));
-        campoDataLetiva = new JTextField(15);
-        pnlInputDataLetiva.add(campoDataLetiva);
-        JButton btnAddDataLetiva = new JButton("Adicionar Data");
-        JButton btnRemoverDataLetiva = new JButton("Remover Data");
-        pnlInputDataLetiva.add(btnAddDataLetiva);
-        pnlInputDataLetiva.add(btnRemoverDataLetiva);
-        painelDatasLetivas.add(pnlInputDataLetiva, BorderLayout.NORTH);
-
-        modeloDatasLetivas = new DefaultListModel<>();
-        listaDatasLetivas = new JList<>(modeloDatasLetivas);
-        painelDatasLetivas.add(new JScrollPane(listaDatasLetivas), BorderLayout.CENTER);
-        
-        abasGerenciamento.addTab("Datas Letivas", painelDatasLetivas);
-
-        // Aba 2: Feriados
-        JPanel painelFeriados = new JPanel(new BorderLayout(5, 5));
-        painelFeriados.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JPanel pnlInputFeriado = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlInputFeriado.add(new JLabel("Feriado (AAAA-MM-DD):"));
-        campoFeriado = new JTextField(15);
-        pnlInputFeriado.add(campoFeriado);
-        JButton btnAddFeriado = new JButton("Adicionar Feriado");
-        JButton btnRemoverFeriado = new JButton("Remover Feriado");
-        pnlInputFeriado.add(btnAddFeriado);
-        pnlInputFeriado.add(btnRemoverFeriado);
-        painelFeriados.add(pnlInputFeriado, BorderLayout.NORTH);
-
-        modeloFeriados = new DefaultListModel<>();
-        listaFeriados = new JList<>(modeloFeriados);
-        painelFeriados.add(new JScrollPane(listaFeriados), BorderLayout.CENTER);
-
-        abasGerenciamento.addTab("Feriados", painelFeriados);
-
-        // Aba 3: Avaliações
-        JPanel painelAvaliacoes = new JPanel(new BorderLayout(5, 5));
-        painelAvaliacoes.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        JPanel pnlInputAvaliacao = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlInputAvaliacao.add(new JLabel("Avaliação Disponível:"));
-        comboAvaliacoesDisponiveis = new JComboBox<>();
-        pnlInputAvaliacao.add(comboAvaliacoesDisponiveis);
-        JButton btnAddAvaliacao = new JButton("Registrar Avaliação");
-        JButton btnRemoverAvaliacao = new JButton("Remover Avaliação");
-        pnlInputAvaliacao.add(btnAddAvaliacao);
-        pnlInputAvaliacao.add(btnRemoverAvaliacao);
-        painelAvaliacoes.add(pnlInputAvaliacao, BorderLayout.NORTH);
-
-        modeloAvaliacoesNoCalendario = new DefaultListModel<>();
-        listaAvaliacoesNoCalendario = new JList<>(modeloAvaliacoesNoCalendario);
-        painelAvaliacoes.add(new JScrollPane(listaAvaliacoesNoCalendario), BorderLayout.CENTER);
-        
-        abasGerenciamento.addTab("Avaliações", painelAvaliacoes);
-
-        add(abasGerenciamento, BorderLayout.CENTER);
-
-        areaResultados = new JTextArea();
-        areaResultados.setEditable(false);
-        JScrollPane scrollPaneResultados = new JScrollPane(areaResultados);
-        add(scrollPaneResultados, BorderLayout.SOUTH);
-
+        this.anoAtual = LocalDate.now().getYear();
+        this.mesAtual = LocalDate.now().getMonthValue();
+        JPanel painelControle = new JPanel(new BorderLayout());
+        JPanel painelNavegacao = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
+        JButton btnAnterior = new JButton("<");
+        JButton btnProximo = new JButton(">");
+        labelMesAno = new JLabel("", SwingConstants.CENTER);
+        labelMesAno.setFont(new Font("Arial", Font.BOLD, 18));
+        painelNavegacao.add(btnAnterior);
+        painelNavegacao.add(labelMesAno);
+        painelNavegacao.add(btnProximo);
+        painelControle.add(painelNavegacao, BorderLayout.CENTER);
+        JPanel painelBotoesAcao = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        JButton btnAdicionarCalendario = new JButton("Adicionar Ano Letivo");
+        JButton btnDeletarCalendario = new JButton("Remover Ano Letivo");
+        painelBotoesAcao.add(btnAdicionarCalendario);
+        painelBotoesAcao.add(btnDeletarCalendario);
+        painelControle.add(painelBotoesAcao, BorderLayout.SOUTH);
+        add(painelControle, BorderLayout.NORTH);
+        painelCalendario = new JPanel(new GridLayout(0, 7, 5, 5));
+        painelCalendario.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        adicionarNomesDosDiasDaSemana();
+        add(new JScrollPane(painelCalendario), BorderLayout.CENTER);
+        btnAnterior.addActionListener(e -> navegarMesAnterior());
+        btnProximo.addActionListener(e -> navegarProximoMes());
         btnAdicionarCalendario.addActionListener(e -> adicionarCalendario());
-        btnBuscarCalendario.addActionListener(e -> buscarCalendario());
-        btnAtualizarCalendario.addActionListener(e -> atualizarCalendario());
         btnDeletarCalendario.addActionListener(e -> deletarCalendario());
-        btnLimpar.addActionListener(e -> limparCampos());
-        btnListarTodos.addActionListener(e -> listarTodosCalendarios());
-
-        btnAddDataLetiva.addActionListener(e -> adicionarDataLetivaCalendario());
-        btnRemoverDataLetiva.addActionListener(e -> removerDataLetivaCalendario());
-        btnAddFeriado.addActionListener(e -> adicionarFeriadoCalendario());
-        btnRemoverFeriado.addActionListener(e -> removerFeriadoCalendario());
-        btnAddAvaliacao.addActionListener(e -> registrarAvaliacaoNoCalendario());
-        btnRemoverAvaliacao.addActionListener(e -> removerAvaliacaoDoCalendario());
-
-        popularAvaliacoes();
-        limparCampos();
-        listarTodosCalendarios();
+        carregarCalendarioDoAnoAtual();
+        popularCalendario();
     }
 
-    private void popularAvaliacoes() {
+    private void adicionarNomesDosDiasDaSemana() {
+        String[] diasDaSemana = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
+        for (String dia : diasDaSemana) {
+            JLabel label = new JLabel(dia, SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.BOLD, 12));
+            painelCalendario.add(label);
+        }
+    }
+
+    private void carregarCalendarioDoAnoAtual() {
         try {
-            List<Avaliacao> avaliacoes = fachada.listarTodasAvaliacoes();
-            comboAvaliacoesDisponiveis.removeAllItems();
-            for (Avaliacao a : avaliacoes) {
-                comboAvaliacoesDisponiveis.addItem(a);
-            }
+            this.calendarioAtual = fachada.buscarCalendario(anoAtual);
+        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
+            this.calendarioAtual = null;
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao carregar avaliações: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Erro ao carregar o calendário do ano " + anoAtual + ": " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void atualizarListasCalendario(CalendarioEscolar calendario) {
-        modeloDatasLetivas.clear();
-        if (calendario != null && calendario.getDatasLetivas() != null) {
-            calendario.getDatasLetivas().stream().sorted().forEach(modeloDatasLetivas::addElement);
+    public void popularCalendario() {
+        painelCalendario.removeAll();
+        adicionarNomesDosDiasDaSemana();
+        YearMonth anoMes = YearMonth.of(anoAtual, mesAtual);
+        labelMesAno.setText(anoMes.getMonth().getDisplayName(TextStyle.FULL, LOCALE_PT_BR) + " de " + anoAtual);
+        LocalDate primeiroDiaDoMes = anoMes.atDay(1);
+        int diaDaSemanaDoPrimeiroDia = primeiroDiaDoMes.getDayOfWeek().getValue();
+        int espacosVazios = (diaDaSemanaDoPrimeiroDia == 7) ? 0 : diaDaSemanaDoPrimeiroDia;
+        for (int i = 0; i < espacosVazios; i++) {
+            painelCalendario.add(new JLabel(""));
         }
+        for (int dia = 1; dia <= anoMes.lengthOfMonth(); dia++) {
+            LocalDate data = anoMes.atDay(dia);
+            JButton botaoDia = new JButton(String.valueOf(dia));
+            botaoDia.setOpaque(true);
+            botaoDia.setBorderPainted(false);
+            botaoDia.setBackground(Color.WHITE);
+            if (calendarioAtual != null) {
+                if (calendarioAtual.getFeriados().contains(data)) {
+                    botaoDia.setBackground(Color.RED);
+                    botaoDia.setForeground(Color.WHITE);
+                } else if (calendarioAtual.getDatasLetivas().contains(data)) {
+                    botaoDia.setBackground(Color.LIGHT_GRAY);
+                }
+                boolean temAvaliacao = calendarioAtual.getAvaliacoes().stream().anyMatch(a -> a.getDataInicio().equals(data));
+                boolean temEventoGenerico = calendarioAtual.getEventos().stream().anyMatch(e -> e.getData().equals(data));
+                if (temAvaliacao || temEventoGenerico) {
+                    botaoDia.setBorder(BorderFactory.createLineBorder(Color.BLUE, 2));
+                    botaoDia.setToolTipText("Eventos neste dia");
+                }
+            }
+            botaoDia.addActionListener(e -> new JDialogDetalhesDia(TelaCalendarioEscolar.this, data, calendarioAtual).setVisible(true));
+            painelCalendario.add(botaoDia);
+        }
+        painelCalendario.revalidate();
+        painelCalendario.repaint();
+    }
 
-        modeloFeriados.clear();
-        if (calendario != null && calendario.getFeriados() != null) {
-            calendario.getFeriados().stream().sorted().forEach(modeloFeriados::addElement);
+    private void navegarMesAnterior() {
+        if (mesAtual == 1) {
+            mesAtual = 12;
+            anoAtual--;
+            carregarCalendarioDoAnoAtual();
+        } else {
+            mesAtual--;
         }
+        popularCalendario();
+    }
 
-        modeloAvaliacoesNoCalendario.clear();
-        if (calendario != null && calendario.getAvaliacoes() != null) {
-            calendario.getAvaliacoes().stream().sorted((a1, a2) -> a1.getId().compareTo(a2.getId())).forEach(modeloAvaliacoesNoCalendario::addElement);
+    private void navegarProximoMes() {
+        if (mesAtual == 12) {
+            mesAtual = 1;
+            anoAtual++;
+            carregarCalendarioDoAnoAtual();
+        } else {
+            mesAtual++;
         }
+        popularCalendario();
     }
 
     private void adicionarCalendario() {
         try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            fachada.adicionarCalendario(anoLetivo);
-            JOptionPane.showMessageDialog(this, "Calendário adicionado com sucesso para o ano " + anoLetivo + "!");
-            limparCampos();
-            listarTodosCalendarios();
+            String inputAno = JOptionPane.showInputDialog(this, "Digite o ano letivo do novo calendário:");
+            if (inputAno != null && !inputAno.trim().isEmpty()) {
+                int novoAno = Integer.parseInt(inputAno);
+                fachada.adicionarCalendario(novoAno);
+                JOptionPane.showMessageDialog(this, "Calendário adicionado com sucesso para o ano " + novoAno + "!");
+                this.anoAtual = novoAno;
+                this.mesAtual = 1;
+                carregarCalendarioDoAnoAtual();
+                popularCalendario();
+            }
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (DadoInvalidoException ex) {
             JOptionPane.showMessageDialog(this, "Erro de Validação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao adicionar calendário: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void buscarCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            CalendarioEscolar calendario = fachada.buscarCalendario(anoLetivo);
-            exibirCalendario(calendario);
-            atualizarListasCalendario(calendario);
-            JOptionPane.showMessageDialog(this, "Calendário encontrado para o ano " + anoLetivo + "!");
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro para buscar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-        } catch (EntidadeNaoEncontradaException ex) {
-            JOptionPane.showMessageDialog(this, "Calendário não encontrado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            limparCampos();
-        } catch (DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro de Validação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao buscar calendário: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void atualizarCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            CalendarioEscolar calendarioAtualizado = new CalendarioEscolar(anoLetivo); // A atualização aqui é por ano letivo, datas e avaliações são gerenciadas em métodos separados.
-            fachada.atualizarCalendario(calendarioAtualizado);
-            JOptionPane.showMessageDialog(this, "Calendário atualizado com sucesso para o ano " + anoLetivo + "!");
-            limparCampos();
-            listarTodosCalendarios();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: Calendário não encontrado para atualização. " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro de Validação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao atualizar calendário: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
         }
     }
 
     private void deletarCalendario() {
         try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar o calendário do ano " + anoLetivo + "?", "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                boolean deletado = fachada.deletarCalendario(anoLetivo);
-                if (deletado) {
-                    JOptionPane.showMessageDialog(this, "Calendário do ano " + anoLetivo + " deletado com sucesso!");
-                    limparCampos();
-                    listarTodosCalendarios();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Não foi possível deletar o calendário.", "Erro", JOptionPane.ERROR_MESSAGE);
+            String inputAno = JOptionPane.showInputDialog(this, "Digite o ano letivo do calendário que deseja remover:");
+            if (inputAno != null && !inputAno.trim().isEmpty()) {
+                int anoParaRemover = Integer.parseInt(inputAno);
+                int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar o calendário do ano " + anoParaRemover + "?", "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    fachada.deletarCalendario(anoParaRemover);
+                    JOptionPane.showMessageDialog(this, "Calendário do ano " + anoParaRemover + " deletado com sucesso!");
+                    if (this.anoAtual == anoParaRemover) {
+                        this.calendarioAtual = null;
+                        this.anoAtual = LocalDate.now().getYear();
+                        this.mesAtual = LocalDate.now().getMonthValue();
+                        carregarCalendarioDoAnoAtual();
+                    }
+                    popularCalendario();
                 }
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro para deletar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Aviso", JOptionPane.WARNING_MESSAGE);
         } catch (EntidadeNaoEncontradaException ex) {
             JOptionPane.showMessageDialog(this, "Erro: Calendário não encontrado para exclusão. " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro de Validação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Erro ao deletar calendário: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
         }
     }
 
-    private void adicionarDataLetivaCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            LocalDate data = LocalDate.parse(campoDataLetiva.getText());
-            fachada.adicionarDataLetivaCalendario(anoLetivo, data);
-            JOptionPane.showMessageDialog(this, "Data letiva adicionada com sucesso!");
-            buscarCalendario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Formato de data inválido. Use AAAA-MM-DD.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao adicionar data letiva: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
+    private class JDialogDetalhesDia extends JDialog {
+        private CalendarioEscolar calendario;
+        private LocalDate data;
+        private JList<Object> listaEventos;
+        private DefaultListModel<Object> modeloEventos;
+        private JTextField campoNovoEvento;
 
-    private void removerDataLetivaCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            LocalDate dataSelecionada = listaDatasLetivas.getSelectedValue();
-            if (dataSelecionada == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma data para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+        public JDialogDetalhesDia(Dialog parent, LocalDate data, CalendarioEscolar calendario) {
+            super(parent, "Eventos do Dia " + data.format(DATE_FORMATTER), true);
+            this.calendario = calendario;
+            this.data = data;
+            if (this.calendario == null) {
+                setLayout(new BorderLayout());
+                add(new JLabel("Nenhum calendário encontrado para este ano.", SwingConstants.CENTER), BorderLayout.CENTER);
+                pack();
+                setLocationRelativeTo(parent);
                 return;
             }
-            fachada.removerDataLetivaCalendario(anoLetivo, dataSelecionada);
-            JOptionPane.showMessageDialog(this, "Data letiva removida com sucesso!");
-            buscarCalendario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao remover data letiva: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
 
-    private void adicionarFeriadoCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            LocalDate data = LocalDate.parse(campoFeriado.getText());
-            fachada.adicionarFeriadoCalendario(anoLetivo, data);
-            JOptionPane.showMessageDialog(this, "Feriado adicionado com sucesso!");
-            buscarCalendario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Formato de data inválido. Use AAAA-MM-DD.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao adicionar feriado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
+            setLayout(new BorderLayout(10, 10));
 
-    private void removerFeriadoCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            LocalDate dataSelecionada = listaFeriados.getSelectedValue();
-            if (dataSelecionada == null) {
-                JOptionPane.showMessageDialog(this, "Selecione um feriado para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            fachada.removerFeriadoCalendario(anoLetivo, dataSelecionada);
-            JOptionPane.showMessageDialog(this, "Feriado removido com sucesso!");
-            buscarCalendario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao remover feriado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
+            JPanel painelControlesSuperiores = new JPanel();
+            painelControlesSuperiores.setLayout(new BoxLayout(painelControlesSuperiores, BoxLayout.Y_AXIS));
 
-    private void registrarAvaliacaoNoCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            Avaliacao avaliacaoSelecionada = (Avaliacao) comboAvaliacoesDisponiveis.getSelectedItem();
-            if (avaliacaoSelecionada == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma avaliação para registrar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            fachada.registrarAvaliacaoNoCalendario(anoLetivo, avaliacaoSelecionada.getId());
-            JOptionPane.showMessageDialog(this, "Avaliação registrada no calendário com sucesso!");
-            buscarCalendario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao registrar avaliação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void removerAvaliacaoDoCalendario() {
-        try {
-            int anoLetivo = Integer.parseInt(campoAnoLetivo.getText());
-            Avaliacao avaliacaoSelecionada = listaAvaliacoesNoCalendario.getSelectedValue();
-            if (avaliacaoSelecionada == null) {
-                JOptionPane.showMessageDialog(this, "Selecione uma avaliação para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            fachada.removerAvaliacaoDoCalendario(anoLetivo, avaliacaoSelecionada.getId());
-            JOptionPane.showMessageDialog(this, "Avaliação removida do calendário com sucesso!");
-            buscarCalendario();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ano Letivo deve ser um número inteiro.", "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (EntidadeNaoEncontradaException | DadoInvalidoException ex) {
-            JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao remover avaliação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-        }
-    }
-
-    private void limparCampos() {
-        campoAnoLetivo.setText("");
-        campoDataLetiva.setText("");
-        campoFeriado.setText("");
-        areaResultados.setText("");
-        modeloDatasLetivas.clear();
-        modeloFeriados.clear();
-        modeloAvaliacoesNoCalendario.clear();
-        popularAvaliacoes();
-    }
-
-    private void listarTodosCalendarios() {
-        try {
-            List<CalendarioEscolar> calendarios = fachada.listarTodosCalendarios();
-            if (calendarios.isEmpty()) {
-                areaResultados.setText("Nenhum calendário cadastrado.");
+            JPanel painelStatus = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            painelStatus.setBorder(BorderFactory.createTitledBorder("Status do Dia"));
+            if (calendario.getFeriados().contains(data)) {
+                painelStatus.add(new JLabel("<html><font color='red'><b>Feriado</b></font></html>"));
+            } else if (calendario.getDatasLetivas().contains(data)) {
+                painelStatus.add(new JLabel("<html><font color='blue'><b>Dia Letivo</b></font></html>"));
             } else {
-                StringBuilder sb = new StringBuilder("--- Lista de Calendários ---\n");
-                for (CalendarioEscolar c : calendarios) {
-                    sb.append("Ano Letivo: ").append(c.getAnoLetivo()).append("\n");
-                    if (c.getDatasLetivas() != null && !c.getDatasLetivas().isEmpty()) {
-                        sb.append("  Datas Letivas: ").append(c.getDatasLetivas().stream().sorted().map(LocalDate::toString).reduce((a, b) -> a + ", " + b).orElse("")).append("\n");
+                painelStatus.add(new JLabel("<html><font color='gray'><b>Dia comum</b></font></html>"));
+            }
+
+            JPanel painelControleDia = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
+            JButton btnAlternarDiaLetivo = new JButton(calendario.getDatasLetivas().contains(data) ? "Remover de Dia Letivo" : "Marcar como Dia Letivo");
+            JButton btnAlternarFeriado = new JButton(calendario.getFeriados().contains(data) ? "Remover de Feriado" : "Marcar como Feriado");
+            btnAlternarDiaLetivo.addActionListener(e -> {
+                try {
+                    if (calendario.getDatasLetivas().contains(data)) {
+                        fachada.removerDataLetivaCalendario(calendario.getAnoLetivo(), data);
+                    } else {
+                        fachada.adicionarDataLetivaCalendario(calendario.getAnoLetivo(), data);
                     }
-                    if (c.getFeriados() != null && !c.getFeriados().isEmpty()) {
-                        sb.append("  Feriados: ").append(c.getFeriados().stream().sorted().map(LocalDate::toString).reduce((a, b) -> a + ", " + b).orElse("")).append("\n");
-                    }
-                    if (c.getAvaliacoes() != null && !c.getAvaliacoes().isEmpty()) {
-                        sb.append("  Avaliações Registradas: ");
-                        c.getAvaliacoes().stream().sorted((a1, a2) -> a1.getId().compareTo(a2.getId())).forEach(a -> sb.append(a.getNomeAvaliacao()).append(" (").append(a.getId()).append("); "));
-                        sb.append("\n");
-                    }
-                    sb.append("---------------------------------------\n");
+                    JOptionPane.showMessageDialog(this, "Configuração de dia letivo atualizada!");
+                    ((TelaCalendarioEscolar) getOwner()).popularCalendario();
+                    dispose();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar dia letivo: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
                 }
-                areaResultados.setText(sb.toString());
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erro ao listar calendários: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            });
+            btnAlternarFeriado.addActionListener(e -> {
+                try {
+                    if (calendario.getFeriados().contains(data)) {
+                        fachada.removerFeriadoCalendario(calendario.getAnoLetivo(), data);
+                    } else {
+                        fachada.adicionarFeriadoCalendario(calendario.getAnoLetivo(), data);
+                    }
+                    JOptionPane.showMessageDialog(this, "Configuração de feriado atualizada!");
+                    ((TelaCalendarioEscolar) getOwner()).popularCalendario();
+                    dispose();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Erro ao atualizar feriado: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            painelControleDia.add(btnAlternarDiaLetivo);
+            painelControleDia.add(btnAlternarFeriado);
+
+            painelControlesSuperiores.add(painelStatus);
+            painelControlesSuperiores.add(painelControleDia);
+
+            JPanel painelEventosDia = new JPanel(new BorderLayout(5,5));
+            painelEventosDia.setBorder(BorderFactory.createTitledBorder("Eventos e Avaliações Agendados"));
+
+            modeloEventos = new DefaultListModel<>();
+            listaEventos = new JList<>(modeloEventos);
+            listaEventos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            painelEventosDia.add(new JScrollPane(listaEventos), BorderLayout.CENTER);
+
+            JPanel painelEventoControle = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            campoNovoEvento = new JTextField(20);
+            JButton btnAddEvento = new JButton("Adicionar");
+            btnAddEvento.addActionListener(e -> adicionarEvento());
+
+            JButton btnRemoverEvento = new JButton("Remover");
+            btnRemoverEvento.addActionListener(e -> removerEvento());
+
+            painelEventoControle.add(new JLabel("Novo Evento:"));
+            painelEventoControle.add(campoNovoEvento);
+            painelEventoControle.add(btnAddEvento);
+            painelEventoControle.add(btnRemoverEvento);
+
+            painelEventosDia.add(painelEventoControle, BorderLayout.SOUTH);
+
+            add(painelControlesSuperiores, BorderLayout.NORTH);
+            add(painelEventosDia, BorderLayout.CENTER);
+
+            carregarDetalhesDoDia();
+            pack();
+            setLocationRelativeTo(parent);
         }
-    }
 
-    private void exibirCalendario(CalendarioEscolar calendario) {
-        if (calendario != null) {
-            campoAnoLetivo.setText(String.valueOf(calendario.getAnoLetivo()));
-            StringBuilder sb = new StringBuilder();
-            sb.append("--- Detalhes do Calendário ---\n")
-              .append("Ano Letivo: ").append(calendario.getAnoLetivo()).append("\n");
+        private void carregarDetalhesDoDia() {
+            modeloEventos.clear();
+            if (calendario != null) {
+                calendario.getAvaliacoes().stream()
+                    .filter(a -> a.getDataInicio().equals(data))
+                    .sorted((a1, a2) -> a1.getId().compareTo(a2.getId()))
+                    .forEach(a -> modeloEventos.addElement("Avaliação: " + a.getNomeAvaliacao() + " (" + a.getId() + ")"));
 
-            if (calendario.getDatasLetivas() != null && !calendario.getDatasLetivas().isEmpty()) {
-                sb.append("Datas Letivas:\n");
-                calendario.getDatasLetivas().stream().sorted().forEach(data -> sb.append("  - ").append(data).append("\n"));
-            } else {
-                sb.append("Nenhuma data letiva registrada.\n");
+                calendario.getEventos().stream()
+                    .filter(e -> e.getData().equals(data))
+                    .sorted((e1, e2) -> e1.getDescricao().compareTo(e2.getDescricao()))
+                    .forEach(e -> modeloEventos.addElement("Evento: " + e.getDescricao() + " (ID:" + e.getId() + ")"));
             }
+        }
 
-            if (calendario.getFeriados() != null && !calendario.getFeriados().isEmpty()) {
-                sb.append("Feriados:\n");
-                calendario.getFeriados().stream().sorted().forEach(feriado -> sb.append("  - ").append(feriado).append("\n"));
-            } else {
-                sb.append("Nenhum feriado registrado.\n");
+        private void adicionarEvento() {
+            try {
+                String descricaoEvento = campoNovoEvento.getText().trim();
+                if (descricaoEvento.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Digite a descrição do evento para adicionar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                
+                String idEvento = UUID.randomUUID().toString();
+                EventoCalendario novoEvento = new EventoCalendario(idEvento, data, descricaoEvento, "GENERICO");
+                fachada.adicionarEventoNoCalendario(calendario.getAnoLetivo(), novoEvento);
+                
+                JOptionPane.showMessageDialog(this, "Evento adicionado com sucesso!");
+                campoNovoEvento.setText("");
+                carregarDetalhesDoDia();
+                ((TelaCalendarioEscolar) getOwner()).popularCalendario();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao adicionar evento: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
+        }
 
-            if (calendario.getAvaliacoes() != null && !calendario.getAvaliacoes().isEmpty()) {
-                sb.append("Avaliações Registradas:\n");
-                calendario.getAvaliacoes().stream().sorted((a1, a2) -> a1.getId().compareTo(a2.getId())).forEach(aval -> sb.append("  - ").append(aval.getNomeAvaliacao()).append(" (").append(aval.getId()).append(")\n"));
-            } else {
-                sb.append("Nenhuma avaliação registrada neste calendário.\n");
+        private void removerEvento() {
+            try {
+                Object itemSelecionado = listaEventos.getSelectedValue();
+                if (itemSelecionado == null) {
+                    JOptionPane.showMessageDialog(this, "Selecione um evento para remover.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                if (itemSelecionado.toString().startsWith("Avaliação:")) {
+                    JOptionPane.showMessageDialog(this, "A remoção de avaliações deve ser feita na tela de Avaliações.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                } else if (itemSelecionado.toString().startsWith("Evento:")) {
+                    String textoItem = itemSelecionado.toString();
+                    String idEvento = textoItem.substring(textoItem.indexOf("(ID:") + 4, textoItem.indexOf(")"));
+                    fachada.removerEventoDoCalendario(calendario.getAnoLetivo(), idEvento);
+                    
+                    JOptionPane.showMessageDialog(this, "Evento removido com sucesso!");
+                    carregarDetalhesDoDia();
+                    ((TelaCalendarioEscolar) getOwner()).popularCalendario();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao remover evento: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
-            areaResultados.setText(sb.toString());
-        } else {
-            limparCampos();
-            areaResultados.setText("Calendário não encontrado.");
         }
     }
 }

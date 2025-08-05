@@ -1,0 +1,17 @@
+[
+  {
+    "nomeUsuario": "admin",
+    "senhaCriptografada": "admin123",
+    "perfil": "ADMINISTRADOR"
+  },
+  {
+    "nomeUsuario": "leon",
+    "senhaCriptografada": "leon123",
+    "perfil": "PROFESSOR"
+  },
+  {
+    "nomeUsuario": "feli",
+    "senhaCriptografada": "feli123",
+    "perfil": "FUNCIONARIO"
+  }
+]

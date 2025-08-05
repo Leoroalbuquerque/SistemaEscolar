@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -154,5 +153,12 @@ public class Aluno extends Pessoa implements Serializable {
             System.err.println("Erro ao parsear linha para Aluno: " + line + " - " + e.getMessage());
             return null;
         }
+    }
+
+    public String getResponsavel() {
+        if (this.cpfsResponsaveis != null && !this.cpfsResponsaveis.isEmpty()) {
+            return this.cpfsResponsaveis.get(0);
+        }
+        return "";
     }
 }

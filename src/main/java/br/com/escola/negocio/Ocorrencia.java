@@ -2,7 +2,6 @@ package br.com.escola.negocio;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -12,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Ocorrencia implements Serializable {
     private static final long serialVersionUID = 1L;
-
     private String id;
     private LocalDateTime dataHora;
     private String descricao;
@@ -24,7 +22,7 @@ public class Ocorrencia implements Serializable {
     public Ocorrencia() {
     }
 
-    public Ocorrencia(String id, LocalDateTime dataHora, String descricao, String registradorId, Aluno aluno) {
+    public Ocorrencia(String id, LocalDateTime dataHora, String registradorId, Aluno aluno, String descricao, String medidasTomadas) {
         this.id = id;
         this.dataHora = dataHora;
         this.descricao = descricao;
@@ -117,11 +115,6 @@ public class Ocorrencia implements Serializable {
 
     @Override
     public String toString() {
-        return "Ocorrencia{" +
-                "id='" + id + '\'' +
-                ", dataHora=" + dataHora +
-                ", aluno=" + (aluno != null ? aluno.getNome() : "N/A") +
-                ", encerrada=" + encerrada +
-                '}';
+        return "Ocorrencia{" + "id='" + id + '\'' + ", dataHora=" + dataHora + ", aluno=" + (aluno != null ? aluno.getNome() : "N/A") + ", encerrada=" + encerrada + '}';
     }
 }

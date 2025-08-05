@@ -4,7 +4,7 @@ import br.com.escola.dados.NotaRepositorioJson;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import java.io.IOException;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class NotaServico implements INotaServico {
@@ -43,13 +43,9 @@ public class NotaServico implements INotaServico {
     @Override
     public void adicionarNota(Nota nota) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         validarNota(nota);
-        try {
-            alunoServico.buscarAluno(nota.getAluno().getMatricula());
-            disciplinaServico.buscarDisciplina(nota.getDisciplina().getCodigo());
-        } catch (EntidadeNaoEncontradaException e) {
-            throw new DadoInvalidoException("Aluno ou Disciplina associados à nota não encontrados: " + e.getMessage());
-        }
-
+        alunoServico.buscarAluno(nota.getAluno().getMatricula());
+        disciplinaServico.buscarDisciplina(nota.getDisciplina().getCodigo());
+        
         if (repositorioNotas.buscar(nota.getAluno().getMatricula(), nota.getDisciplina().getCodigo(), nota.getTipoAvaliacao(), nota.getDataLancamento()) != null) {
             throw new DadoInvalidoException("Já existe uma nota registrada com os mesmos critérios (aluno, disciplina, tipo e data de lançamento).");
         }
@@ -57,7 +53,7 @@ public class NotaServico implements INotaServico {
     }
 
     @Override
-    public Nota buscarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, Date dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public Nota buscarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, LocalDate dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException {
         if (matriculaAluno == null || matriculaAluno.trim().isEmpty() || codigoDisciplina == null || codigoDisciplina.trim().isEmpty() || tipoAvaliacao == null || tipoAvaliacao.trim().isEmpty() || dataLancamento == null) {
             throw new DadoInvalidoException("Todos os campos (matrícula do aluno, código da disciplina, tipo de avaliação e data de lançamento) são obrigatórios para buscar uma nota.");
         }
@@ -69,24 +65,20 @@ public class NotaServico implements INotaServico {
     }
 
     @Override
-    public void atualizarNota(Nota notaAtualizada) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizarNota(Nota notaAtualizada) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         validarNota(notaAtualizada);
-        try {
-            alunoServico.buscarAluno(notaAtualizada.getAluno().getMatricula());
-            disciplinaServico.buscarDisciplina(notaAtualizada.getDisciplina().getCodigo());
-        } catch (EntidadeNaoEncontradaException e) {
-            throw new DadoInvalidoException("Aluno ou Disciplina associados à nota atualizada não encontrados: " + e.getMessage());
-        }
+        alunoServico.buscarAluno(notaAtualizada.getAluno().getMatricula());
+        disciplinaServico.buscarDisciplina(notaAtualizada.getDisciplina().getCodigo());
 
         Nota notaExistente = repositorioNotas.buscar(notaAtualizada.getAluno().getMatricula(), notaAtualizada.getDisciplina().getCodigo(), notaAtualizada.getTipoAvaliacao(), notaAtualizada.getDataLancamento());
         if (notaExistente == null) {
-             throw new EntidadeNaoEncontradaException("Nota a ser atualizada não encontrada.");
+            throw new EntidadeNaoEncontradaException("Nota a ser atualizada não encontrada.");
         }
         repositorioNotas.atualizar(notaAtualizada);
     }
 
     @Override
-    public boolean deletarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, Date dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public boolean deletarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, LocalDate dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException {
         if (matriculaAluno == null || matriculaAluno.trim().isEmpty() || codigoDisciplina == null || codigoDisciplina.trim().isEmpty() || tipoAvaliacao == null || tipoAvaliacao.trim().isEmpty() || dataLancamento == null) {
             throw new DadoInvalidoException("Todos os campos (matrícula do aluno, código da disciplina, tipo de avaliação e data de lançamento) são obrigatórios para deletar uma nota.");
         }

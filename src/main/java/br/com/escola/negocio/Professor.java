@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "registroFuncional")
@@ -17,6 +18,7 @@ public class Professor extends Pessoa implements Serializable {
     private String registroFuncional;
     private String especialidade;
     private double salario;
+    @JsonManagedReference("professor-disciplinas")
     private List<DisciplinaTurma> disciplinasLecionadas;
 
     public Professor() {

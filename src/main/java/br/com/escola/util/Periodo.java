@@ -1,6 +1,7 @@
 package br.com.escola.util;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public class Periodo {
@@ -26,6 +27,10 @@ public class Periodo {
         return dataFim;
     }
 
+    public long getDuracaoEmDias() {
+        return ChronoUnit.DAYS.between(dataInicio, dataFim) + 1;
+    }
+
     public boolean contemData(LocalDate data) {
         if (data == null) {
             return false;
@@ -46,7 +51,7 @@ public class Periodo {
         if (o == null || getClass() != o.getClass()) return false;
         Periodo periodo = (Periodo) o;
         return Objects.equals(dataInicio, periodo.dataInicio) &&
-               Objects.equals(dataFim, periodo.dataFim);
+                Objects.equals(dataFim, periodo.dataFim);
     }
 
     @Override
@@ -57,8 +62,8 @@ public class Periodo {
     @Override
     public String toString() {
         return "Periodo{" +
-               "dataInicio=" + dataInicio +
-               ", dataFim=" + dataFim +
-               '}';
+                "dataInicio=" + dataInicio +
+                ", dataFim=" + dataFim +
+                '}';
     }
 }

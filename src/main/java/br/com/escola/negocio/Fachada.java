@@ -1,30 +1,35 @@
 package br.com.escola.negocio;
 
-import br.com.escola.dados.DisciplinaTurmaRepositorioJson;
 import br.com.escola.dados.AlunoRepositorioJson;
 import br.com.escola.dados.AvaliacaoRepositorioJson;
 import br.com.escola.dados.CalendarioEscolarRepositorioJson;
 import br.com.escola.dados.DisciplinaRepositorioJson;
+import br.com.escola.dados.DisciplinaTurmaRepositorioJson;
+import br.com.escola.dados.FrequenciaRepositorioJson;
 import br.com.escola.dados.FuncionarioRepositorioJson;
 import br.com.escola.dados.NotaRepositorioJson;
 import br.com.escola.dados.OcorrenciaRepositorioJson;
 import br.com.escola.dados.ProfessorRepositorioJson;
 import br.com.escola.dados.ResponsavelRepositorioJson;
+import br.com.escola.dados.SerieEscolarRepositorioJson;
 import br.com.escola.dados.TurmaRepositorioJson;
-import br.com.escola.dados.FrequenciaRepositorioJson;
 import br.com.escola.excecoes.DadoInvalidoException;
 import br.com.escola.excecoes.EntidadeNaoEncontradaException;
+import br.com.escola.util.BoletimEscolar;
+import br.com.escola.util.DiarioClasse;
+import br.com.escola.util.EventoCalendario;
+import br.com.escola.util.HistoricoEscolar;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Fachada implements IFachada {
-
     private static Fachada instance;
-
     private final AlunoRepositorioJson alunoRepositorio;
     private final AvaliacaoRepositorioJson avaliacaoRepositorio;
     private final DisciplinaRepositorioJson disciplinaRepositorio;
@@ -37,7 +42,7 @@ public class Fachada implements IFachada {
     private final DisciplinaTurmaRepositorioJson disciplinaTurmaRepositorio;
     private final NotaRepositorioJson notaRepositorio;
     private final FrequenciaRepositorioJson frequenciaRepositorio;
-
+    private final SerieEscolarRepositorioJson serieEscolarRepositorio;
     private final DisciplinaTurmaServico disciplinaTurmaServico;
     private final AlunoServico alunoServico;
     private final ProfessorServico professorServico;
@@ -50,9 +55,10 @@ public class Fachada implements IFachada {
     private final CalendarioEscolarServico calendarioEscolarServico;
     private final NotaServico notaServico;
     private final FrequenciaServico frequenciaServico;
+    private final SerieEscolarServico serieEscolarServico;
     private final Acesso acesso;
 
-    private Fachada() {
+    public Fachada() {
         this.alunoRepositorio = new AlunoRepositorioJson();
         this.professorRepositorio = new ProfessorRepositorioJson();
         this.disciplinaRepositorio = new DisciplinaRepositorioJson();
@@ -65,33 +71,21 @@ public class Fachada implements IFachada {
         this.disciplinaTurmaRepositorio = new DisciplinaTurmaRepositorioJson();
         this.notaRepositorio = new NotaRepositorioJson();
         this.frequenciaRepositorio = new FrequenciaRepositorioJson();
-
+        this.serieEscolarRepositorio = new SerieEscolarRepositorioJson();
         this.acesso = new Acesso();
-
         this.responsavelServico = new ResponsavelServico(this.responsavelRepositorio);
         this.alunoServico = new AlunoServico(this.alunoRepositorio, this.responsavelServico);
         this.professorServico = new ProfessorServico(this.professorRepositorio);
         this.disciplinaServico = new DisciplinaServico(this.disciplinaRepositorio);
-        this.disciplinaTurmaServico = new DisciplinaTurmaServico(this.disciplinaTurmaRepositorio);
-
-        this.turmaServico = new TurmaServico(this.turmaRepositorio,
-                                             this.alunoServico,
-                                             this.disciplinaServico,
-                                             this.professorServico);
-
+        this.serieEscolarServico = new SerieEscolarServico(this.serieEscolarRepositorio);
+        this.turmaServico = new TurmaServico(this.turmaRepositorio, this.alunoServico, this.disciplinaServico, this.professorServico, this.serieEscolarServico);
         this.funcionarioServico = new FuncionarioServico(this.funcionarioRepositorio);
         this.avaliacaoServico = new AvaliacaoServico(this.avaliacaoRepositorio);
-
-        this.ocorrenciaServico = new OcorrenciaServico(this.ocorrenciaRepositorio,
-                                                       this.alunoServico,
-                                                       this.funcionarioServico,
-                                                       this.professorServico);
-
-        this.calendarioEscolarServico = new CalendarioEscolarServico(this.calendarioEscolarRepositorio,
-                                                                   this.avaliacaoServico);
-
+        this.ocorrenciaServico = new OcorrenciaServico(this.ocorrenciaRepositorio, this.alunoServico, this.funcionarioServico, this.professorServico);
+        this.calendarioEscolarServico = new CalendarioEscolarServico(this.calendarioEscolarRepositorio, this.avaliacaoServico);
         this.notaServico = new NotaServico(this.notaRepositorio, this.alunoServico, this.disciplinaServico);
         this.frequenciaServico = new FrequenciaServico(this.frequenciaRepositorio, this.alunoServico, this.disciplinaServico);
+        this.disciplinaTurmaServico = new DisciplinaTurmaServico(this.disciplinaTurmaRepositorio, this.turmaServico, this.disciplinaServico, this.professorServico);
     }
 
     public static Fachada getInstance() {
@@ -109,6 +103,15 @@ public class Fachada implements IFachada {
     @Override
     public boolean checarPermissao(Usuario usuario, String funcionalidade) {
         return acesso.checarPermissao(usuario, funcionalidade);
+    }
+
+    @Override
+    public boolean criarNovoUsuario(String nomeUsuario, String senha, String perfil) throws DadoInvalidoException, IOException {
+        boolean sucesso = acesso.criarUsuario(nomeUsuario, senha, perfil);
+        if (!sucesso) {
+            throw new DadoInvalidoException("Nome de usuário '" + nomeUsuario + "' já existe.");
+        }
+        return true;
     }
 
     @Override
@@ -132,8 +135,8 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarAluno(String matricula) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return alunoServico.deletarAluno(matricula);
+    public void deletarAluno(String matricula) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        alunoServico.deletarAluno(matricula);
     }
 
     @Override
@@ -153,7 +156,11 @@ public class Fachada implements IFachada {
 
     @Override
     public void adicionarProfessor(Professor professor) throws DadoInvalidoException, IOException {
-        professorServico.adicionarProfessor(professor);
+        try {
+            professorServico.adicionarProfessor(professor);
+        } catch (EntidadeNaoEncontradaException ex) {
+            System.getLogger(Fachada.class.getName()).log(System.Logger.Level.ERROR, "Erro ao adicionar professor", ex);
+        }
     }
 
     @Override
@@ -172,13 +179,17 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarProfessor(String registroFuncional) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return professorServico.deletarProfessor(registroFuncional);
+    public void deletarProfessor(String registroFuncional) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        professorServico.deletarProfessor(registroFuncional);
     }
 
     @Override
     public void adicionarDisciplina(Disciplina disciplina) throws DadoInvalidoException, IOException {
-        disciplinaServico.adicionarDisciplina(disciplina);
+        try {
+            disciplinaServico.adicionarDisciplina(disciplina);
+        } catch (EntidadeNaoEncontradaException ex) {
+            System.getLogger(Fachada.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+        }
     }
 
     @Override
@@ -197,8 +208,8 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarDisciplina(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return disciplinaServico.deletarDisciplina(codigo);
+    public void deletarDisciplina(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        disciplinaServico.deletarDisciplina(codigo);
     }
 
     @Override
@@ -222,8 +233,8 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarTurma(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return turmaServico.deletarTurma(codigo);
+    public void deletarTurma(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        turmaServico.deletarTurma(codigo);
     }
 
     @Override
@@ -237,89 +248,85 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public void adicionarDisciplinaNaTurma(String codigoTurma, String codigoDisciplina) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+    public void adicionarDisciplinaComProfessorNaTurma(String codigoTurma, String codigoDisciplina, String registroProfessor)
+            throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         Turma turma = turmaServico.buscarTurma(codigoTurma);
         Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
+        Professor professor = professorServico.buscarProfessor(registroProfessor);
 
-        Professor professorAssociado = null;
-        List<Professor> professores = professorServico.listarTodosProfessores();
-        if (!professores.isEmpty()) {
-            professorAssociado = professores.get(0);
-        } else {
-            throw new EntidadeNaoEncontradaException("Nenhum professor disponível para associar à disciplina na turma.");
+        if (turma == null) {
+            throw new EntidadeNaoEncontradaException("Turma com código " + codigoTurma + " não encontrada.");
+        }
+        if (disciplina == null) {
+            throw new EntidadeNaoEncontradaException("Disciplina com código " + codigoDisciplina + " não encontrada.");
+        }
+        if (professor == null) {
+            throw new EntidadeNaoEncontradaException("Professor com registro funcional " + registroProfessor + " não encontrado.");
         }
 
-        DisciplinaTurma novaAssociacao = new DisciplinaTurma(disciplina, professorAssociado, turma);
-        disciplinaTurmaServico.adicionarDisciplinaTurma(novaAssociacao);
-
-        professorAssociado.adicionarDisciplinaLecionada(novaAssociacao);
-
-        professorServico.atualizarProfessor(professorAssociado);
+        disciplinaTurmaServico.adicionarDisciplinaComProfessorNaTurma(
+                turma.getCodigo(),
+                disciplina.getCodigo(),
+                professor.getRegistroFuncional()
+        );
     }
 
     @Override
     public void removerDisciplinaDaTurma(String codigoTurma, String codigoDisciplina) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        Turma turma = turmaServico.buscarTurma(codigoTurma);
-        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
+        Disciplina disciplina = buscarDisciplina(codigoDisciplina);
+        Turma turma = buscarTurma(codigoTurma);
+        if (turma == null) throw new EntidadeNaoEncontradaException("Turma com código " + codigoTurma + " não encontrada.");
+        if (disciplina == null) throw new EntidadeNaoEncontradaException("Disciplina com código " + codigoDisciplina + " não encontrada.");
+        List<DisciplinaTurma> atribuicoesParaRemover = disciplinaTurmaServico.listarPorDisciplina(disciplina.getCodigo()).stream().filter(dt -> dt.getTurma().getCodigo().equals(turma.getCodigo())).collect(Collectors.toList());
+        if (atribuicoesParaRemover.isEmpty()) {
+            throw new EntidadeNaoEncontradaException("Disciplina " + disciplina.getNome() + " não encontrada na turma " + turma.getNomeTurma() + " para remoção.");
+        }
+        for (DisciplinaTurma dt : atribuicoesParaRemover) {
+            disciplinaTurmaServico.removerDisciplinaTurma(dt.getId());
+        }
+    }
 
-        DisciplinaTurma associacaoParaRemover = disciplinaTurmaServico.buscarPorAtributos(disciplina, null, turma);
-        
-        if (associacaoParaRemover == null) {
-            List<DisciplinaTurma> atribuicoesDaTurma = disciplinaTurmaServico.listarProfessoresPorTurma(turma);
-            for (DisciplinaTurma dt : atribuicoesDaTurma) {
-                if (dt.getDisciplina().getCodigo().equals(codigoDisciplina)) {
-                    associacaoParaRemover = dt;
-                    break;
-                }
+    @Override
+    public void removerProfessorDeDisciplinaNaTurma(String codigoTurma, String codigoDisciplina) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
+        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
+        Turma turma = turmaServico.buscarTurma(codigoTurma);
+        DisciplinaTurma atribuicao = disciplinaTurmaServico.buscarAtribuicao(turma, disciplina);
+        if (atribuicao == null) {
+            throw new EntidadeNaoEncontradaException("Atribuição de disciplina e turma não encontrada.");
+        }
+        if (atribuicao.getProfessor() == null) {
+            throw new DadoInvalidoException("Nenhum professor está atribuído a esta disciplina e turma.");
+        }
+        atribuicao.setProfessor(null);
+        disciplinaTurmaServico.atualizarDisciplinaTurma(atribuicao);
+    }
+
+    @Override
+    public void removerAtribuicaoDisciplinaProfessorTurma(String codigoDisciplina, String registroProfessor, String codigoTurma) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
+        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
+        Professor professor = professorServico.buscarProfessor(registroProfessor);
+        Turma turma = turmaServico.buscarTurma(codigoTurma);
+        if (turma == null) throw new EntidadeNaoEncontradaException("Turma com código " + codigoTurma + " não encontrada.");
+        if (disciplina == null) throw new EntidadeNaoEncontradaException("Disciplina com código " + codigoDisciplina + " não encontrada.");
+        if (professor == null) throw new EntidadeNaoEncontradaException("Professor com registro funcional " + registroProfessor + " não encontrado.");
+        DisciplinaTurma atribuicaoParaRemover = null;
+        try {
+            atribuicaoParaRemover = disciplinaTurmaServico.buscarPorAtributos(disciplina, professor, turma);
+        } catch (EntidadeNaoEncontradaException e) {
+            atribuicaoParaRemover = disciplinaTurmaServico.buscarAtribuicao(turma, disciplina);
+            if (atribuicaoParaRemover != null && atribuicaoParaRemover.getProfessor() != null && atribuicaoParaRemover.getProfessor().getCpf().equals(professor.getCpf())) {
+                atribuicaoParaRemover.setProfessor(null);
+                disciplinaTurmaServico.atualizarDisciplinaTurma(atribuicaoParaRemover);
+                return;
+            } else {
+                throw new EntidadeNaoEncontradaException("Atribuição de disciplina para professor e turma não encontrada para remoção ou o professor não está associado.");
             }
         }
-
-        if (associacaoParaRemover == null) {
-            throw new EntidadeNaoEncontradaException("Associação da Disciplina " + disciplina.getNome() + " com a Turma " + turma.getNomeTurma() + " não encontrada para remoção.");
-        }
-
-        disciplinaTurmaServico.removerDisciplinaTurma(associacaoParaRemover.getId());
-        
-        Professor professorAssociado = associacaoParaRemover.getProfessor();
-        if (professorAssociado != null) {
-            professorAssociado.removerDisciplinaLecionada(associacaoParaRemover);
-            professorServico.atualizarProfessor(professorAssociado);
-        }
-    }
-
-    @Override
-    public void atribuirDisciplinaProfessorTurma(String codigoDisciplina, String registroProfessor, String codigoTurma)
-            throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
-        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
-        Professor professor = professorServico.buscarProfessor(registroProfessor);
-        Turma turma = turmaServico.buscarTurma(codigoTurma);
-
-        DisciplinaTurma novaAtribuicao = new DisciplinaTurma(disciplina, professor, turma);
-        disciplinaTurmaServico.adicionarDisciplinaTurma(novaAtribuicao);
-
-        professor.adicionarDisciplinaLecionada(novaAtribuicao);
-        
-        professorServico.atualizarProfessor(professor);
-    }
-
-    @Override
-    public void removerAtribuicaoDisciplinaProfessorTurma(String codigoDisciplina, String registroProfessor, String codigoTurma)
-            throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
-
-        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
-        Professor professor = professorServico.buscarProfessor(registroProfessor);
-        Turma turma = turmaServico.buscarTurma(codigoTurma);
-
-        DisciplinaTurma atribuicaoParaRemover = disciplinaTurmaServico.buscarPorAtributos(disciplina, professor, turma);
-        if (atribuicaoParaRemover == null) {
+        if (atribuicaoParaRemover != null) {
+            disciplinaTurmaServico.removerDisciplinaTurma(atribuicaoParaRemover.getId());
+        } else {
             throw new EntidadeNaoEncontradaException("Atribuição de disciplina para professor e turma não encontrada para remoção.");
         }
-
-        disciplinaTurmaServico.removerDisciplinaTurma(atribuicaoParaRemover.getId());
-
-        professor.removerDisciplinaLecionada(atribuicaoParaRemover);
-        
-        professorServico.atualizarProfessor(professor);
     }
 
     @Override
@@ -328,24 +335,28 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public List<DisciplinaTurma> buscarAtribuicoesPorProfessor(String registroProfessor)
-            throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        Professor professor = professorServico.buscarProfessor(registroProfessor);
-        return disciplinaTurmaServico.listarDisciplinasPorProfessor(professor);
+    public List<DisciplinaTurma> buscarAtribuicoesPorProfessor(String registroProfessor) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        return disciplinaTurmaServico.listarPorProfessor(registroProfessor);
     }
 
     @Override
-    public List<DisciplinaTurma> buscarAtribuicoesPorTurma(String codigoTurma)
-            throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        Turma turma = turmaServico.buscarTurma(codigoTurma);
-        return disciplinaTurmaServico.listarProfessoresPorTurma(turma);
+    public List<DisciplinaTurma> buscarAtribuicoesPorTurma(String codigoTurma) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        return disciplinaTurmaServico.listarPorTurma(codigoTurma);
     }
 
     @Override
-    public List<DisciplinaTurma> buscarAtribuicoesPorDisciplina(String codigoDisciplina)
-            throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
-        return disciplinaTurmaServico.listarTurmasPorDisciplina(disciplina);
+    public List<DisciplinaTurma> buscarAtribuicoesPorDisciplina(String codigoDisciplina) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        return disciplinaTurmaServico.listarPorDisciplina(codigoDisciplina);
+    }
+
+    @Override
+    public List<Disciplina> buscarDisciplinasPorTurma(String codigoTurma) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
+        return disciplinaTurmaServico.buscarDisciplinasPorTurma(codigoTurma);
+    }
+
+    @Override
+    public List<Professor> buscarProfessoresPorTurma(String codigoTurma) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
+        return disciplinaTurmaServico.buscarProfessoresPorTurma(codigoTurma);
     }
 
     @Override
@@ -369,13 +380,17 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarFuncionario(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return funcionarioServico.deletarFuncionario(cpf);
+    public void deletarFuncionario(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        funcionarioServico.deletarFuncionario(cpf);
     }
 
     @Override
     public void adicionarResponsavel(Responsavel responsavel) throws DadoInvalidoException, IOException {
-        responsavelServico.adicionarResponsavel(responsavel);
+        try {
+            responsavelServico.adicionarResponsavel(responsavel);
+        } catch (EntidadeNaoEncontradaException ex) {
+            System.getLogger(Fachada.class.getName()).log(System.Logger.Level.ERROR, "Erro ao adicionar responsável", ex);
+        }
     }
 
     @Override
@@ -394,10 +409,10 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarResponsavel(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return responsavelServico.deletarResponsavel(cpf);
+    public void deletarResponsavel(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        responsavelServico.deletarResponsavel(cpf);
     }
-
+    
     @Override
     public void criarAvaliacao(String id, String nomeAvaliacao, LocalDate dataInicio, LocalDate dataFim, Disciplina disciplina) throws DadoInvalidoException, IOException {
         Avaliacao novaAvaliacao = new Avaliacao(id, nomeAvaliacao, dataInicio, dataFim, disciplina);
@@ -420,13 +435,13 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean excluirAvaliacao(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return avaliacaoServico.deletarAvaliacao(id);
+    public void excluirAvaliacao(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        avaliacaoServico.deletarAvaliacao(id);
     }
 
     @Override
-    public void adicionarOcorrencia(String id, LocalDateTime dataHora, String descricao, String registradorId, Aluno aluno) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
-        Ocorrencia novaOcorrencia = new Ocorrencia(id, dataHora, descricao, registradorId, aluno);
+    public void adicionarOcorrencia(String id, LocalDateTime dataHora, String registradorId, Aluno aluno, String descricao, String medidasTomadas) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
+        Ocorrencia novaOcorrencia = new Ocorrencia(id, dataHora, registradorId, aluno, descricao, medidasTomadas);
         ocorrenciaServico.adicionarOcorrencia(novaOcorrencia);
     }
 
@@ -446,8 +461,8 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarOcorrencia(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return ocorrenciaServico.deletarOcorrencia(id);
+    public void deletarOcorrencia(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        ocorrenciaServico.deletarOcorrencia(id);
     }
 
     @Override
@@ -482,8 +497,8 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarCalendario(int anoLetivo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return calendarioEscolarServico.deletarCalendario(anoLetivo);
+    public void deletarCalendario(int anoLetivo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        calendarioEscolarServico.deletarCalendario(anoLetivo);
     }
 
     @Override
@@ -517,12 +532,22 @@ public class Fachada implements IFachada {
     }
 
     @Override
+    public void adicionarEventoNoCalendario(int anoLetivo, EventoCalendario evento) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        calendarioEscolarServico.adicionarEventoNoCalendario(anoLetivo, evento);
+    }
+
+    @Override
+    public void removerEventoDoCalendario(int anoLetivo, String idEvento) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        calendarioEscolarServico.removerEventoDoCalendario(anoLetivo, idEvento);
+    }
+
+    @Override
     public void adicionarNota(Nota nota) throws DadoInvalidoException, EntidadeNaoEncontradaException, IOException {
         notaServico.adicionarNota(nota);
     }
 
     @Override
-    public Nota buscarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, Date dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+    public Nota buscarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, LocalDate dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         return notaServico.buscarNota(matriculaAluno, codigoDisciplina, tipoAvaliacao, dataLancamento);
     }
 
@@ -532,8 +557,8 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, Date dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return notaServico.deletarNota(matriculaAluno, codigoDisciplina, tipoAvaliacao, dataLancamento);
+    public void deletarNota(String matriculaAluno, String codigoDisciplina, String tipoAvaliacao, LocalDate dataLancamento) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        notaServico.deletarNota(matriculaAluno, codigoDisciplina, tipoAvaliacao, dataLancamento);
     }
 
     @Override
@@ -597,23 +622,87 @@ public class Fachada implements IFachada {
     }
 
     @Override
-    public boolean deletarFrequencia(String matriculaAluno, String codigoDisciplina, LocalDate data) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
-        return frequenciaServico.deletarFrequencia(matriculaAluno, codigoDisciplina, data);
+    public void deletarFrequencia(String matriculaAluno, String codigoDisciplina, LocalDate data) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        frequenciaServico.deletarFrequencia(matriculaAluno, codigoDisciplina, data);
     }
 
     @Override
+    public void adicionarSerieEscolar(SerieEscolar serie) throws DadoInvalidoException, IOException {
+        serieEscolarServico.adicionarSerieEscolar(serie);
+    }
+
+    @Override
+    public SerieEscolar buscarSerieEscolar(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        return serieEscolarServico.buscarSerieEscolar(codigo);
+    }
+
+    @Override
+    public List<SerieEscolar> listarTodasSeriesEscolares() throws IOException {
+        return serieEscolarServico.listarTodasSeriesEscolares();
+    }
+
+    @Override
+    public void atualizarSerieEscolar(SerieEscolar serie) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        serieEscolarServico.atualizarSerieEscolar(serie);
+    }
+
+    @Override
+    public void deletarSerieEscolar(String codigo) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        serieEscolarServico.deletarSerieEscolar(codigo);
+    }
+
+    @Override
+    public BoletimEscolar gerarBoletim(String matriculaAluno) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        Aluno aluno = alunoServico.buscarAluno(matriculaAluno);
+        List<Nota> notasDoAluno = notaServico.buscarNotasPorAluno(matriculaAluno);
+        List<Frequencia> frequenciasDoAluno = frequenciaServico.listarFrequenciasPorAluno(matriculaAluno);
+        return new BoletimEscolar(aluno, notasDoAluno, frequenciasDoAluno);
+    }
+
+    @Override
+    public DiarioClasse gerarDiario(String codigoTurma, String codigoDisciplina) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        Turma turma = turmaServico.buscarTurma(codigoTurma);
+        Disciplina disciplina = disciplinaServico.buscarDisciplina(codigoDisciplina);
+        Professor professor = disciplinaTurmaServico.listarPorTurma(turma.getCodigo()).stream()
+                .filter(dt -> dt.getDisciplina().getCodigo().equals(disciplina.getCodigo()))
+                .map(DisciplinaTurma::getProfessor)
+                .findFirst()
+                .orElse(null);
+        List<Aluno> alunos = turmaServico.listarAlunosNaTurma(codigoTurma);
+        List<Frequencia> frequencias = frequenciaServico.listarFrequenciasPorDisciplina(disciplina.getCodigo()).stream()
+                .filter(f -> alunos.stream().anyMatch(a -> a.getMatricula().equals(f.getAluno().getMatricula())))
+                .collect(Collectors.toList());
+        return new DiarioClasse(turma, disciplina, professor, alunos, frequencias);
+    }
+
+    @Override
+    public HistoricoEscolar gerarHistorico(String matriculaAluno) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        Aluno aluno = alunoServico.buscarAluno(matriculaAluno);
+        List<Nota> notasDoAluno = notaServico.buscarNotasPorAluno(matriculaAluno);
+        List<Frequencia> frequenciasDoAluno = frequenciaServico.listarFrequenciasPorAluno(matriculaAluno);
+
+        Map<String, List<Nota>> notasPorDisciplina = notasDoAluno.stream()
+                .collect(Collectors.groupingBy(nota -> nota.getDisciplina().getCodigo()));
+
+        Map<String, List<Frequencia>> frequenciasPorDisciplina = frequenciasDoAluno.stream()
+                .collect(Collectors.groupingBy(frequencia -> frequencia.getDisciplina().getCodigo()));
+
+        return new HistoricoEscolar(aluno, notasPorDisciplina, frequenciasPorDisciplina);
+    }
+
     public void limparTodosRepositorios() throws IOException {
         alunoRepositorio.limpar();
-        professorRepositorio.limpar();
+        avaliacaoRepositorio.limpar();
         disciplinaRepositorio.limpar();
         funcionarioRepositorio.limpar();
+        professorRepositorio.limpar();
         responsavelRepositorio.limpar();
         turmaRepositorio.limpar();
-        avaliacaoRepositorio.limpar();
         ocorrenciaRepositorio.limpar();
         calendarioEscolarRepositorio.limpar();
         disciplinaTurmaRepositorio.limpar();
         notaRepositorio.limpar();
         frequenciaRepositorio.limpar();
+        serieEscolarRepositorio.limpar();
     }
 }

@@ -1,9 +1,25 @@
 [ {
-  "nome" : "Pedro Álvares",
-  "cpf" : "555.555.555-55",
-  "telefone" : "5555-4444",
-  "email" : "pedro@escola.com",
-  "matriculaFuncional" : "SEC0001",
-  "cargo" : "Secretário",
-  "salario" : 3000.0
+  "nome" : "joao",
+  "cpf" : "012345678910",
+  "telefone" : "55555555",
+  "email" : "jdsnjk@jdnsjk.com",
+  "matriculaFuncional" : "PRO0123",
+  "cargo" : "secretino",
+  "salario" : 2000.0
+}, {
+  "nome" : "mateus",
+  "cpf" : "85236974103",
+  "telefone" : "77774444",
+  "email" : "jin@ksks.com",
+  "matriculaFuncional" : "SEC5231",
+  "cargo" : "ASG",
+  "salario" : 1500.0
+}, {
+  "nome" : "Marta",
+  "cpf" : "65983265410",
+  "telefone" : "461616",
+  "email" : "hjbdjsacbj@jdsa.com",
+  "matriculaFuncional" : "SEC1234",
+  "cargo" : "secretária",
+  "salario" : 2000.0
 } ]

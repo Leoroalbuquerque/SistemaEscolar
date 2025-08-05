@@ -17,7 +17,7 @@ public class Funcionario extends Pessoa implements Serializable {
     }
 
     public Funcionario(String nome, String cpf, String telefone, String email, 
-                       String cargo, String matriculaFuncional, double salario) { 
+                       String matriculaFuncional,String cargo, double salario) { 
         super(nome, cpf, telefone, email);
         this.matriculaFuncional = matriculaFuncional;
         this.cargo = cargo;

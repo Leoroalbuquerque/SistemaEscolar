@@ -19,11 +19,30 @@ import br.com.escola.gui.TelaRegistroOcorrencia;
 import br.com.escola.gui.TelaCalendarioEscolar;
 import br.com.escola.gui.TelaNota;
 import br.com.escola.gui.TelaFrequencia;
+import br.com.escola.gui.TelaCadastroUsuario;
 
 public class TelaPrincipal extends JFrame {
 
     private Usuario usuarioLogado;
     private JLabel labelStatusUsuario;
+    private JMenuItem itemCadastrarAluno;
+    private JMenuItem itemCadastrarProfessor;
+    private JMenuItem itemCadastrarDisciplina;
+    private JMenuItem itemCadastrarTurma;
+    private JMenuItem itemCadastrarFuncionario;
+    private JMenuItem itemCadastrarResponsavel;
+    private JMenuItem itemCadastrarUsuario;
+    private JMenuItem itemLancamentoNotas;
+    private JMenuItem itemRegistroFrequencia;
+    private JMenuItem itemOcorrencias;
+    private JMenuItem itemCalendario;
+    private JMenuItem itemAvaliacoes;
+    private JMenu menuCadastros;
+    private JMenu menuOperacoes;
+    private JMenu menuAjuda;
+    private JMenu menuSair;
+    private JMenuItem itemSairSistema;
+    private JMenuItem itemSobre;
 
     public TelaPrincipal(Usuario usuario) {
         this.usuarioLogado = usuario;
@@ -37,15 +56,16 @@ public class TelaPrincipal extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu menuCadastros = new JMenu("Cadastros");
+        menuCadastros = new JMenu("Cadastros");
         menuBar.add(menuCadastros);
 
-        JMenuItem itemCadastrarAluno = new JMenuItem("Alunos");
-        JMenuItem itemCadastrarProfessor = new JMenuItem("Professores");
-        JMenuItem itemCadastrarDisciplina = new JMenuItem("Disciplinas");
-        JMenuItem itemCadastrarTurma = new JMenuItem("Turmas");
-        JMenuItem itemCadastrarFuncionario = new JMenuItem("Funcionários");
-        JMenuItem itemCadastrarResponsavel = new JMenuItem("Responsáveis");
+        itemCadastrarAluno = new JMenuItem("Alunos");
+        itemCadastrarProfessor = new JMenuItem("Professores");
+        itemCadastrarDisciplina = new JMenuItem("Disciplinas");
+        itemCadastrarTurma = new JMenuItem("Turmas");
+        itemCadastrarFuncionario = new JMenuItem("Funcionários");
+        itemCadastrarResponsavel = new JMenuItem("Responsáveis");
+        itemCadastrarUsuario = new JMenuItem("Usuários");
 
         menuCadastros.add(itemCadastrarAluno);
         menuCadastros.add(itemCadastrarProfessor);
@@ -53,28 +73,29 @@ public class TelaPrincipal extends JFrame {
         menuCadastros.add(itemCadastrarTurma);
         menuCadastros.add(itemCadastrarFuncionario);
         menuCadastros.add(itemCadastrarResponsavel);
+        menuCadastros.add(itemCadastrarUsuario);
 
-        JMenu menuOperacoes = new JMenu("Operações");
+        menuOperacoes = new JMenu("Operações");
         menuBar.add(menuOperacoes);
-        JMenuItem itemLancamentoNotas = new JMenuItem("Lançamento de Notas");
-        JMenuItem itemRegistroFrequencia = new JMenuItem("Registro de Frequência");
-        JMenuItem itemOcorrencias = new JMenuItem("Ocorrências");
-        JMenuItem itemCalendario = new JMenuItem("Calendário Escolar");
-        JMenuItem itemAvaliacoes = new JMenuItem("Avaliações");
+        itemLancamentoNotas = new JMenuItem("Lançamento de Notas");
+        itemRegistroFrequencia = new JMenuItem("Registro de Frequência");
+        itemOcorrencias = new JMenuItem("Ocorrências");
+        itemCalendario = new JMenuItem("Calendário Escolar");
+        itemAvaliacoes = new JMenuItem("Avaliações");
         menuOperacoes.add(itemLancamentoNotas);
         menuOperacoes.add(itemRegistroFrequencia);
         menuOperacoes.add(itemOcorrencias);
         menuOperacoes.add(itemCalendario);
         menuOperacoes.add(itemAvaliacoes);
 
-        JMenu menuAjuda = new JMenu("Ajuda");
+        menuAjuda = new JMenu("Ajuda");
         menuBar.add(menuAjuda);
-        JMenuItem itemSobre = new JMenuItem("Sobre");
+        itemSobre = new JMenuItem("Sobre");
         menuAjuda.add(itemSobre);
 
-        JMenu menuSair = new JMenu("Sair");
+        menuSair = new JMenu("Sair");
         menuBar.add(menuSair);
-        JMenuItem itemSairSistema = new JMenuItem("Sair do Sistema");
+        itemSairSistema = new JMenuItem("Sair do Sistema");
         menuSair.add(itemSairSistema);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -141,8 +162,13 @@ public class TelaPrincipal extends JFrame {
         });
 
         itemOcorrencias.addActionListener(e -> {
-            TelaRegistroOcorrencia telaOcorrencia = new TelaRegistroOcorrencia(this, true);
-            telaOcorrencia.setVisible(true);
+            try {
+                TelaRegistroOcorrencia telaOcorrencia = new TelaRegistroOcorrencia(this, true);
+                telaOcorrencia.setVisible(true);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Erro ao abrir a tela de Ocorrências: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
         });
 
         itemCalendario.addActionListener(e -> {
@@ -155,7 +181,12 @@ public class TelaPrincipal extends JFrame {
             telaAvaliacao.setVisible(true);
         });
 
-        itemSobre.addActionListener(e -> JOptionPane.showMessageDialog(this, "Sistema Escolar v1.0\nDesenvolvido por: [Seu Nome/Grupo]", "Sobre", JOptionPane.INFORMATION_MESSAGE));
+        itemCadastrarUsuario.addActionListener(e -> {
+            TelaCadastroUsuario telaCadastro = new TelaCadastroUsuario();
+            telaCadastro.setVisible(true);
+        });
+
+        itemSobre.addActionListener(e -> JOptionPane.showMessageDialog(this, "Sistema Escolar v1.0\nDesenvolvido por: [Leonardo Rodrigues, José Albérico, Rodrigo Albuquerque]", "Sobre", JOptionPane.INFORMATION_MESSAGE));
 
         configurarPermissoes();
     }
@@ -176,27 +207,61 @@ public class TelaPrincipal extends JFrame {
             return;
         }
 
+        String perfil = usuarioLogado.getPerfil();
+
+        setAllMenuItemsEnabled(false);
+        menuAjuda.setEnabled(true);
+        itemSobre.setEnabled(true);
+        menuSair.setEnabled(true);
+        itemSairSistema.setEnabled(true);
+
+
+        if (perfil.equals("ADMINISTRADOR")) {
+            setAllMenuItemsEnabled(true);
+        } else if (perfil.equals("PROFESSOR")) {
+            menuOperacoes.setEnabled(true);
+            itemLancamentoNotas.setEnabled(true);
+            itemRegistroFrequencia.setEnabled(true);
+            itemOcorrencias.setEnabled(true);
+            itemCalendario.setEnabled(true);
+            itemAvaliacoes.setEnabled(true);
+        } else if (perfil.equals("FUNCIONARIO")) {
+            menuCadastros.setEnabled(true);
+            itemCadastrarAluno.setEnabled(true);
+            itemCadastrarProfessor.setEnabled(true);
+            itemCadastrarDisciplina.setEnabled(true);
+            itemCadastrarTurma.setEnabled(true);
+            itemCadastrarFuncionario.setEnabled(true);
+            itemCadastrarResponsavel.setEnabled(true);
+            itemCadastrarUsuario.setEnabled(false);
+
+            menuOperacoes.setEnabled(true);
+            itemLancamentoNotas.setEnabled(false);
+            itemRegistroFrequencia.setEnabled(false);
+            itemOcorrencias.setEnabled(true);
+            itemCalendario.setEnabled(true);
+            itemAvaliacoes.setEnabled(false);
+        } else {
+
+        }
+    }
+    
+    private void setAllMenuItemsEnabled(boolean enabled) {
         JMenuBar menuBar = getJMenuBar();
         for (int i = 0; i < menuBar.getMenuCount(); i++) {
             JMenu menu = menuBar.getMenu(i);
             if (menu != null) {
-
-                if (usuarioLogado.getPerfil().equals("PROFESSOR")) {
-                    if (menu.getText().equals("Cadastros")) {
-                        menu.setEnabled(false);
-                    }
-                } else if (usuarioLogado.getPerfil().equals("ALUNO")) {
-                    if (menu.getText().equals("Cadastros") || menu.getText().equals("Operações")) {
-                        menu.setEnabled(false);
-                    }
-                } else if (!usuarioLogado.getPerfil().equals("ADMINISTRADOR")) {
-                    if (!menu.getText().equals("Sair") && !menu.getText().equals("Ajuda")) {
-                        menu.setEnabled(false);
+                menu.setEnabled(enabled);
+                for (int j = 0; j < menu.getItemCount(); j++) {
+                    JMenuItem item = menu.getItem(j);
+                    if (item != null) {
+                        item.setEnabled(enabled);
                     }
                 }
             }
         }
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

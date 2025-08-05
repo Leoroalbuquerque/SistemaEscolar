@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, String> {
 
@@ -39,51 +39,51 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
                 System.err.println("Erro ao carregar funcionários do arquivo JSON. Detalhes: " + e.getMessage());
                 this.funcionarios = new ArrayList<>();
             }
-        } else {
-            System.out.println("Arquivo " + NOME_ARQUIVO + " não encontrado ou vazio. Iniciando com lista vazia de funcionários.");
         }
     }
 
-    private void salvarFuncionariosNoArquivo() {
+    private void salvarFuncionariosNoArquivo() throws IOException {
         try {
             objectMapper.writeValue(new File(NOME_ARQUIVO), this.funcionarios);
-            System.out.println("Funcionários salvos no arquivo: " + NOME_ARQUIVO);
         } catch (IOException e) {
             System.err.println("Erro ao salvar funcionários no arquivo JSON: " + e.getMessage());
+            throw e;
         }
     }
 
     @Override
-    public void salvar(Funcionario entidade) throws DadoInvalidoException {
+    public void salvar(Funcionario entidade) throws DadoInvalidoException, IOException {
         if (entidade == null || entidade.getMatriculaFuncional() == null || entidade.getMatriculaFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Erro: Tentativa de adicionar funcionário nulo ou com matrícula funcional vazia/nula.");
         }
-        if (entidade.getNome() == null || entidade.getNome().trim().isEmpty()) {
+        if (entidade.getNome() == null || entidade.getMatriculaFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Erro: Nome do funcionário é obrigatório para adição.");
         }
 
-        boolean existe = this.funcionarios.stream()
-                .anyMatch(f -> f != null && f.getMatriculaFuncional() != null && f.getMatriculaFuncional().equals(entidade.getMatriculaFuncional()));
-        if (existe) {
-            throw new DadoInvalidoException("Já existe um funcionário cadastrado com a matrícula: " + entidade.getMatriculaFuncional());
-        }
+        boolean jaExiste = this.funcionarios.stream()
+                .anyMatch(f -> Objects.equals(f.getMatriculaFuncional(), entidade.getMatriculaFuncional()));
 
-        this.funcionarios.add(entidade);
-        salvarFuncionariosNoArquivo();
+        if (jaExiste) {
+            throw new DadoInvalidoException("Já existe um funcionário cadastrado com a matrícula: " + entidade.getMatriculaFuncional());
+        } else {
+            this.funcionarios.add(entidade);
+            salvarFuncionariosNoArquivo();
+        }
     }
 
     @Override
-    public Optional<Funcionario> buscarPorId(String chave) {
+    public Funcionario buscarPorId(String chave) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (chave == null || chave.trim().isEmpty()) {
-            return Optional.empty();
+            throw new DadoInvalidoException("Matrícula funcional para busca não pode ser nula ou vazia.");
         }
         return this.funcionarios.stream()
-                .filter(f -> f != null && f.getMatriculaFuncional() != null && f.getMatriculaFuncional().equals(chave))
-                .findFirst();
+                .filter(f -> Objects.equals(f.getMatriculaFuncional(), chave))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Funcionário com matrícula " + chave + " não encontrado."));
     }
 
     @Override
-    public void atualizar(Funcionario entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizar(Funcionario entidade) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (entidade == null || entidade.getMatriculaFuncional() == null || entidade.getMatriculaFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Não é possível atualizar: Funcionário ou matrícula funcional inválida.");
         }
@@ -91,39 +91,41 @@ public class FuncionarioRepositorioJson implements IRepositorio<Funcionario, Str
             throw new DadoInvalidoException("Nome do funcionário é obrigatório para atualização.");
         }
 
-        Optional<Funcionario> funcionarioExistenteOpt = buscarPorId(entidade.getMatriculaFuncional());
-        if (funcionarioExistenteOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Funcionário com matrícula " + entidade.getMatriculaFuncional() + " não encontrado para atualização.");
+        boolean encontrada = false;
+        for (int i = 0; i < funcionarios.size(); i++) {
+            if (Objects.equals(funcionarios.get(i).getMatriculaFuncional(), entidade.getMatriculaFuncional())) {
+                funcionarios.set(i, entidade);
+                encontrada = true;
+                break;
+            }
         }
 
-        this.funcionarios.removeIf(f -> f != null && f.getMatriculaFuncional() != null && f.getMatriculaFuncional().equals(entidade.getMatriculaFuncional()));
-        this.funcionarios.add(entidade);
+        if (!encontrada) {
+            throw new EntidadeNaoEncontradaException("Funcionário com matrícula " + entidade.getMatriculaFuncional() + " não encontrado para atualização.");
+        }
         salvarFuncionariosNoArquivo();
     }
 
     @Override
-    public boolean deletar(String chave) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String chave) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
         if (chave == null || chave.trim().isEmpty()) {
             throw new DadoInvalidoException("Matrícula funcional para deleção não pode ser nula ou vazia.");
         }
-        boolean removido = this.funcionarios.removeIf(f -> f != null && f.getMatriculaFuncional() != null && f.getMatriculaFuncional().equals(chave));
-        if (removido) {
-            salvarFuncionariosNoArquivo();
-            return true;
-        } else {
-            throw new EntidadeNaoEncontradaException("Funcionário com matrícula " + chave + " não encontrado para deleção no JSON.");
+        boolean removido = this.funcionarios.removeIf(f -> Objects.equals(f.getMatriculaFuncional(), chave));
+        if (!removido) {
+            throw new EntidadeNaoEncontradaException("Funcionário com matrícula " + chave + " não encontrado para exclusão.");
         }
+        salvarFuncionariosNoArquivo();
     }
 
     @Override
-    public List<Funcionario> listarTodos() {
+    public List<Funcionario> listarTodos() throws IOException {
         return new ArrayList<>(this.funcionarios);
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         this.funcionarios.clear();
         salvarFuncionariosNoArquivo();
-        System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

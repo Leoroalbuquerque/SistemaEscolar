@@ -10,7 +10,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.release>24</maven.compiler.release>
-        <exec.mainClass>br.com.escola.main.SistemaEscolarTeste</exec.mainClass>
+        <exec.mainClass>br.com.escola.gui.TelaPrincipal</exec.mainClass>
         <jackson.version>2.17.2</jackson.version>
         <gson.version>2.10.1</gson.version>
         <junit.jupiter.version>5.10.0</junit.jupiter.version>
@@ -18,10 +18,11 @@
         <mockito.version>5.11.0</mockito.version>
         <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
-        <pdfbox.version>2.0.29</pdfbox.version> </properties>
+        <pdfbox.version>2.0.29</pdfbox.version>
+    </properties>
 
     <repositories>
-        </repositories>
+    </repositories>
 
     <build>
         <plugins>
@@ -121,7 +122,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.20.0</version> 
+            <version>2.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

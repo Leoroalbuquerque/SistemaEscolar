@@ -10,8 +10,10 @@ import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.io.IOException;
 
 public class TelaCadastroAvaliacao extends JDialog {
 
@@ -23,6 +25,8 @@ public class TelaCadastroAvaliacao extends JDialog {
     private JTextField campoDataFim;
     private JComboBox<Disciplina> comboDisciplinas;
     private JTextArea areaResultados;
+
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public TelaCadastroAvaliacao(JFrame parent, boolean modal) {
         super(parent, "Cadastro de Avaliações", modal);
@@ -43,11 +47,11 @@ public class TelaCadastroAvaliacao extends JDialog {
         campoNomeAvaliacao = new JTextField();
         painelEntrada.add(campoNomeAvaliacao);
 
-        painelEntrada.add(new JLabel("Data Início (AAAA-MM-DD):"));
+        painelEntrada.add(new JLabel("Data Início (DD/MM/AAAA):"));
         campoDataInicio = new JTextField();
         painelEntrada.add(campoDataInicio);
 
-        painelEntrada.add(new JLabel("Data Fim (AAAA-MM-DD):"));
+        painelEntrada.add(new JLabel("Data Fim (DD/MM/AAAA):"));
         campoDataFim = new JTextField();
         painelEntrada.add(campoDataFim);
 
@@ -98,7 +102,7 @@ public class TelaCadastroAvaliacao extends JDialog {
             for (Disciplina d : disciplinas) {
                 comboDisciplinas.addItem(d);
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Erro ao carregar disciplinas: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -107,8 +111,8 @@ public class TelaCadastroAvaliacao extends JDialog {
         try {
             String id = campoId.getText();
             String nome = campoNomeAvaliacao.getText();
-            LocalDate dataInicio = LocalDate.parse(campoDataInicio.getText());
-            LocalDate dataFim = LocalDate.parse(campoDataFim.getText());
+            LocalDate dataInicio = LocalDate.parse(campoDataInicio.getText(), dateFormatter);
+            LocalDate dataFim = LocalDate.parse(campoDataFim.getText(), dateFormatter);
             Disciplina disciplinaSelecionada = (Disciplina) comboDisciplinas.getSelectedItem();
 
             if (disciplinaSelecionada == null) {
@@ -121,7 +125,7 @@ public class TelaCadastroAvaliacao extends JDialog {
             limparCampos();
             listarTodasAvaliacoes();
         } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Formato de data inválido. Use AAAA-MM-DD.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Formato de data inválido. Use DD/MM/AAAA.", "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (DadoInvalidoException ex) {
             JOptionPane.showMessageDialog(this, "Erro de Validação: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
@@ -156,8 +160,8 @@ public class TelaCadastroAvaliacao extends JDialog {
         try {
             String id = campoId.getText();
             String nome = campoNomeAvaliacao.getText();
-            LocalDate dataInicio = LocalDate.parse(campoDataInicio.getText());
-            LocalDate dataFim = LocalDate.parse(campoDataFim.getText());
+            LocalDate dataInicio = LocalDate.parse(campoDataInicio.getText(), dateFormatter);
+            LocalDate dataFim = LocalDate.parse(campoDataFim.getText(), dateFormatter);
             Disciplina disciplinaSelecionada = (Disciplina) comboDisciplinas.getSelectedItem();
 
             if (disciplinaSelecionada == null) {
@@ -171,7 +175,7 @@ public class TelaCadastroAvaliacao extends JDialog {
             limparCampos();
             listarTodasAvaliacoes();
         } catch (DateTimeParseException ex) {
-            JOptionPane.showMessageDialog(this, "Formato de data inválido. Use AAAA-MM-DD.", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Formato de data inválido. Use DD/MM/AAAA.", "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (EntidadeNaoEncontradaException ex) {
             JOptionPane.showMessageDialog(this, "Erro: Avaliação não encontrada para atualização. " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (DadoInvalidoException ex) {
@@ -192,14 +196,10 @@ public class TelaCadastroAvaliacao extends JDialog {
 
             int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza que deseja deletar a avaliação " + id + "?", "Confirmar Exclusão", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
-                boolean deletado = fachada.excluirAvaliacao(id);
-                if (deletado) {
-                    JOptionPane.showMessageDialog(this, "Avaliação deletada com sucesso!");
-                    limparCampos();
-                    listarTodasAvaliacoes();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Não foi possível deletar a avaliação.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }
+                fachada.excluirAvaliacao(id);
+                JOptionPane.showMessageDialog(this, "Avaliação deletada com sucesso!");
+                limparCampos();
+                listarTodasAvaliacoes();
             }
         } catch (EntidadeNaoEncontradaException ex) {
             JOptionPane.showMessageDialog(this, "Erro: Avaliação não encontrada para exclusão. " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
@@ -230,8 +230,8 @@ public class TelaCadastroAvaliacao extends JDialog {
                 for (Avaliacao a : avaliacoes) {
                     sb.append("ID: ").append(a.getId())
                       .append(", Nome: ").append(a.getNomeAvaliacao())
-                      .append(", Início: ").append(a.getDataInicio())
-                      .append(", Fim: ").append(a.getDataFim());
+                      .append(", Início: ").append(a.getDataInicio().format(dateFormatter))
+                      .append(", Fim: ").append(a.getDataFim().format(dateFormatter));
                     if (a.getDisciplina() != null) {
                         sb.append(", Disciplina: ").append(a.getDisciplina().getNome());
                     }
@@ -249,9 +249,9 @@ public class TelaCadastroAvaliacao extends JDialog {
         if (avaliacao != null) {
             campoId.setText(avaliacao.getId());
             campoNomeAvaliacao.setText(avaliacao.getNomeAvaliacao());
-            campoDataInicio.setText(avaliacao.getDataInicio().toString());
-            campoDataFim.setText(avaliacao.getDataFim().toString());
-            popularDisciplinas(); // Recarrega para garantir que a disciplina esteja no combo
+            campoDataInicio.setText(avaliacao.getDataInicio().format(dateFormatter));
+            campoDataFim.setText(avaliacao.getDataFim().format(dateFormatter));
+            popularDisciplinas();
             if (avaliacao.getDisciplina() != null) {
                 for (int i = 0; i < comboDisciplinas.getItemCount(); i++) {
                     if (comboDisciplinas.getItemAt(i).getCodigo().equals(avaliacao.getDisciplina().getCodigo())) {
@@ -264,8 +264,8 @@ public class TelaCadastroAvaliacao extends JDialog {
                 "--- Detalhes da Avaliação ---\n" +
                 "ID: " + avaliacao.getId() + "\n" +
                 "Nome: " + avaliacao.getNomeAvaliacao() + "\n" +
-                "Data Início: " + avaliacao.getDataInicio() + "\n" +
-                "Data Fim: " + avaliacao.getDataFim() + "\n" +
+                "Data Início: " + avaliacao.getDataInicio().format(dateFormatter) + "\n" +
+                "Data Fim: " + avaliacao.getDataFim().format(dateFormatter) + "\n" +
                 "Disciplina: " + (avaliacao.getDisciplina() != null ? avaliacao.getDisciplina().getNome() : "N/A") + "\n"
             );
         } else {

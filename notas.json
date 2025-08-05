@@ -1,1 +1,41 @@
-[ ]
+[ {
+  "valor" : 100.0,
+  "tipoAvaliacao" : "primeira unidade",
+  "dataLancamento" : "2025-08-04",
+  "disciplina" : {
+    "codigo" : "MAT02",
+    "nome" : "matemática",
+    "cargaHoraria" : 0
+  },
+  "aluno" : {
+    "nome" : "roberto filho",
+    "cpf" : "0123456",
+    "telefone" : "sem_telefone_aluno",
+    "email" : "sem_email_aluno",
+    "matricula" : "0123456",
+    "anoLetivo" : 2026,
+    "cpfsResponsaveis" : [ "87654321032" ],
+    "dataNascimento" : "2015-01-01",
+    "responsavel" : "87654321032"
+  }
+}, {
+  "valor" : 90.0,
+  "tipoAvaliacao" : "primeira unidade",
+  "dataLancamento" : "2025-08-04",
+  "disciplina" : {
+    "codigo" : "MAT02",
+    "nome" : "matemática",
+    "cargaHoraria" : 0
+  },
+  "aluno" : {
+    "nome" : "pedro",
+    "cpf" : "1234567",
+    "telefone" : "sem_telefone_aluno",
+    "email" : "sem_email_aluno",
+    "matricula" : "1234567",
+    "anoLetivo" : 2026,
+    "cpfsResponsaveis" : [ "12345678910" ],
+    "dataNascimento" : "2014-10-09",
+    "responsavel" : "12345678910"
+  }
+} ]

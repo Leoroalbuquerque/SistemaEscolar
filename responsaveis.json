@@ -1,6 +1,6 @@
 [
   {
-    "parentesco": "Mãe",
+    "parentesco": "Mae",
     "cpfResponsavel": "111.111.111-11",
     "principal": true,
     "nome": "Joana Silva",
@@ -16,5 +16,50 @@
     "cpf": "222.222.222-22",
     "telefone": "8888-1111",
     "email": "carlos@email.com"
+  },
+  {
+    "parentesco": "pai",
+    "cpfResponsavel": "12345678910",
+    "principal": true,
+    "nome": "paulo",
+    "cpf": "12345678910",
+    "telefone": "11112222",
+    "email": "hfdjn@ujujhfj.com"
+  },
+  {
+    "parentesco": "mãe",
+    "cpfResponsavel": "98765432109",
+    "principal": true,
+    "nome": "marta",
+    "cpf": "98765432109",
+    "telefone": "66666666",
+    "email": "oifn@lhc.com"
+  },
+  {
+    "parentesco": "pai",
+    "cpfResponsavel": "87654321032",
+    "principal": true,
+    "nome": "roberto pai",
+    "cpf": "87654321032",
+    "telefone": "44445555",
+    "email": "hfjfhy@bvy.com"
+  },
+  {
+    "parentesco": "pai",
+    "cpfResponsavel": "45612301234",
+    "principal": true,
+    "nome": "Jorge Pai",
+    "cpf": "45612301234",
+    "telefone": "88888888",
+    "email": "ndksdm@kwdso.com"
+  },
+  {
+    "parentesco": "Mãe",
+    "cpfResponsavel": "75395102589",
+    "principal": true,
+    "nome": "Marcela",
+    "cpf": "75395102589",
+    "telefone": "56566565626",
+    "email": "jkdsskn@idskl.com"
   }
 ]

@@ -4,6 +4,7 @@ import br.com.escola.negocio.Disciplina;
 import br.com.escola.negocio.DisciplinaTurma;
 import br.com.escola.negocio.Professor;
 import br.com.escola.negocio.Turma;
+import br.com.escola.excecoes.EntidadeNaoEncontradaException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,9 +17,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class DisciplinaTurmaRepositorioJson implements Serializable {
+public class DisciplinaTurmaRepositorioJson implements IRepositorio<DisciplinaTurma, String>, Serializable {
     private static final long serialVersionUID = 1L;
     private static final String NOME_ARQUIVO = "disciplinas_turmas.json";
     private final ObjectMapper objectMapper;
@@ -56,41 +58,54 @@ public class DisciplinaTurmaRepositorioJson implements Serializable {
         objectMapper.writeValue(arquivo, disciplinasTurmas);
     }
 
+    @Override
     public void salvar(DisciplinaTurma disciplinaTurma) throws IOException {
+        if (disciplinaTurma.getId() == null || disciplinaTurma.getId().isEmpty()) {
+            disciplinaTurma.setId(UUID.randomUUID().toString());
+        }
         List<DisciplinaTurma> todasDisciplinasTurmas = lerTodasDoArquivo();
-        
-        todasDisciplinasTurmas.removeIf(dt -> dt.getId() != null && dt.getId().equals(disciplinaTurma.getId()));
-        
         todasDisciplinasTurmas.add(disciplinaTurma);
         escreverNoArquivo(todasDisciplinasTurmas);
     }
     
-    public void remover(DisciplinaTurma disciplinaTurma) throws IOException {
+    @Override
+    public void deletar(String id) throws IOException, EntidadeNaoEncontradaException {
         List<DisciplinaTurma> todasDisciplinasTurmas = lerTodasDoArquivo();
-        if (todasDisciplinasTurmas.remove(disciplinaTurma)) {
-            escreverNoArquivo(todasDisciplinasTurmas);
-        } else {
-            throw new IllegalArgumentException("Atribuição de disciplina-turma não encontrada para remoção.");
+        boolean removido = todasDisciplinasTurmas.removeIf(dt -> dt.getId() != null && dt.getId().equals(id));
+        if (!removido) {
+            throw new EntidadeNaoEncontradaException("Atribuição de disciplina-turma com ID " + id + " não encontrada para remoção.");
         }
+        escreverNoArquivo(todasDisciplinasTurmas);
     }
 
-    public DisciplinaTurma buscar(Disciplina disciplina, Professor professor, Turma turma) throws IOException {
-        return lerTodasDoArquivo().stream()
-                .filter(dt -> Objects.equals(dt.getDisciplina(), disciplina) &&
-                              Objects.equals(dt.getProfessor(), professor) &&
-                              Objects.equals(dt.getTurma(), turma))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public DisciplinaTurma buscarPorId(String id) throws IOException {
+    @Override
+    public DisciplinaTurma buscarPorId(String id) throws IOException, EntidadeNaoEncontradaException {
         return lerTodasDoArquivo().stream()
                 .filter(dt -> dt.getId() != null && dt.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Atribuição de disciplina-turma com ID " + id + " não encontrada."));
     }
 
-    public void atualizar(DisciplinaTurma disciplinaTurmaAtualizada) throws IOException {
+    public DisciplinaTurma buscarAssociacao(String codigoDisciplina, String codigoTurma, String cpfProfessor) throws IOException, EntidadeNaoEncontradaException {
+        return lerTodasDoArquivo().stream()
+                .filter(dt -> Objects.equals(dt.getDisciplina().getCodigo(), codigoDisciplina) &&
+                                Objects.equals(dt.getTurma().getCodigo(), codigoTurma) &&
+                                (cpfProfessor == null ? dt.getProfessor() == null : 
+                                 Objects.equals(dt.getProfessor() != null ? dt.getProfessor().getCpf() : null, cpfProfessor)))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Atribuição de disciplina-turma não encontrada para a disciplina, turma e professor especificados."));
+    }
+
+    public DisciplinaTurma buscarAssociacaoPorDisciplinaETurma(String codigoDisciplina, String codigoTurma) throws IOException, EntidadeNaoEncontradaException {
+        return lerTodasDoArquivo().stream()
+                .filter(dt -> Objects.equals(dt.getDisciplina().getCodigo(), codigoDisciplina) &&
+                                Objects.equals(dt.getTurma().getCodigo(), codigoTurma))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Associação de disciplina e turma não encontrada para a disciplina e turma especificadas."));
+    }
+
+    @Override
+    public void atualizar(DisciplinaTurma disciplinaTurmaAtualizada) throws IOException, EntidadeNaoEncontradaException {
         List<DisciplinaTurma> todasDisciplinasTurmas = lerTodasDoArquivo();
         boolean encontrada = false;
         for (int i = 0; i < todasDisciplinasTurmas.size(); i++) {
@@ -102,39 +117,40 @@ public class DisciplinaTurmaRepositorioJson implements Serializable {
             }
         }
         if (!encontrada) {
-            throw new IllegalArgumentException("DisciplinaTurma com ID " + disciplinaTurmaAtualizada.getId() + " não encontrada para atualização.");
+            throw new EntidadeNaoEncontradaException("DisciplinaTurma com ID " + disciplinaTurmaAtualizada.getId() + " não encontrada para atualização.");
         }
         escreverNoArquivo(todasDisciplinasTurmas);
     }
 
+    @Override
     public List<DisciplinaTurma> listarTodos() throws IOException {
         return lerTodasDoArquivo();
     }
 
-    public List<DisciplinaTurma> listarPorProfessor(Professor professor) throws IOException {
-        if (professor == null) {
+    public List<DisciplinaTurma> listarPorProfessor(String cpfProfessor) throws IOException {
+        if (cpfProfessor == null || cpfProfessor.trim().isEmpty()) {
             return new ArrayList<>();
         }
         return lerTodasDoArquivo().stream()
-                .filter(dt -> Objects.equals(dt.getProfessor(), professor))
+                .filter(dt -> dt.getProfessor() != null && dt.getProfessor().getCpf().equals(cpfProfessor))
                 .collect(Collectors.toList());
     }
 
-    public List<DisciplinaTurma> listarPorTurma(Turma turma) throws IOException {
-        if (turma == null) {
+    public List<DisciplinaTurma> listarPorTurma(String codigoTurma) throws IOException {
+        if (codigoTurma == null || codigoTurma.trim().isEmpty()) {
             return new ArrayList<>();
         }
         return lerTodasDoArquivo().stream()
-                .filter(dt -> Objects.equals(dt.getTurma(), turma))
+                .filter(dt -> dt.getTurma() != null && dt.getTurma().getCodigo().equals(codigoTurma))
                 .collect(Collectors.toList());
     }
 
-    public List<DisciplinaTurma> listarPorDisciplina(Disciplina disciplina) throws IOException {
-        if (disciplina == null) {
+    public List<DisciplinaTurma> listarPorDisciplina(String codigoDisciplina) throws IOException {
+        if (codigoDisciplina == null || codigoDisciplina.trim().isEmpty()) {
             return new ArrayList<>();
         }
         return lerTodasDoArquivo().stream()
-                .filter(dt -> Objects.equals(dt.getDisciplina(), disciplina))
+                .filter(dt -> dt.getDisciplina() != null && dt.getDisciplina().getCodigo().equals(codigoDisciplina))
                 .collect(Collectors.toList());
     }
 

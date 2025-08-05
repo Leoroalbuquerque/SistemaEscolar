@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 public class ResponsavelRepositorioJson implements IRepositorio<Responsavel, String> {
 
@@ -47,75 +47,71 @@ public class ResponsavelRepositorioJson implements IRepositorio<Responsavel, Str
     }
 
     @Override
-    public void salvar(Responsavel responsavel) throws DadoInvalidoException {
-        if (buscarPorId(responsavel.getCpfResponsavel()).isPresent()) {
+    public void salvar(Responsavel responsavel) throws DadoInvalidoException, IOException {
+        if (responsavel == null || responsavel.getCpfResponsavel() == null || responsavel.getCpfResponsavel().trim().isEmpty()) {
+            throw new DadoInvalidoException("Responsável ou CPF não pode ser nulo/vazio para salvar.");
+        }
+        try {
+            buscarPorId(responsavel.getCpfResponsavel());
             throw new DadoInvalidoException("Responsável com CPF " + responsavel.getCpfResponsavel() + " já existe.");
-        }
-        this.responsaveis.add(responsavel);
-        try {
+        } catch (EntidadeNaoEncontradaException e) {
+            this.responsaveis.add(responsavel);
             salvarDados();
-        } catch (IOException e) {
-            throw new DadoInvalidoException("Erro ao salvar o responsável: " + e.getMessage());
         }
     }
 
     @Override
-    public Optional<Responsavel> buscarPorId(String cpf) {
+    public Responsavel buscarPorId(String cpf) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
+        if (cpf == null || cpf.trim().isEmpty()) {
+            throw new DadoInvalidoException("CPF para busca não pode ser nulo ou vazio.");
+        }
         return responsaveis.stream()
-                .filter(r -> r.getCpfResponsavel().equals(cpf))
-                .findFirst();
+                .filter(r -> Objects.equals(r.getCpfResponsavel(), cpf))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Responsável com CPF " + cpf + " não encontrado."));
     }
 
     @Override
-    public void atualizar(Responsavel responsavelAtualizado) throws EntidadeNaoEncontradaException, DadoInvalidoException {
-        Optional<Responsavel> responsavelExistenteOpt = buscarPorId(responsavelAtualizado.getCpfResponsavel());
-        if (responsavelExistenteOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Responsável com CPF " + responsavelAtualizado.getCpfResponsavel() + " não encontrado para atualização.");
+    public void atualizar(Responsavel responsavelAtualizado) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        if (responsavelAtualizado == null || responsavelAtualizado.getCpfResponsavel() == null || responsavelAtualizado.getCpfResponsavel().trim().isEmpty()) {
+            throw new DadoInvalidoException("Responsável ou CPF não pode ser nulo/vazio para atualização.");
         }
 
-        Responsavel responsavelExistente = responsavelExistenteOpt.get();
-        int index = responsaveis.indexOf(responsavelExistente);
-        if (index != -1) {
-            responsaveis.set(index, responsavelAtualizado);
-        }
-
-        try {
-            salvarDados();
-        } catch (IOException e) {
-            throw new DadoInvalidoException("Erro ao salvar o responsável atualizado: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public boolean deletar(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException {
-        Optional<Responsavel> responsavelParaDeletarOpt = buscarPorId(cpf);
-        if (responsavelParaDeletarOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Responsável com CPF " + cpf + " não encontrado para exclusão.");
-        }
-        boolean removido = responsaveis.remove(responsavelParaDeletarOpt.get());
-        if (removido) {
-            try {
-                salvarDados();
-            } catch (IOException e) {
-                throw new DadoInvalidoException("Erro ao salvar após exclusão do responsável: " + e.getMessage());
+        boolean encontrada = false;
+        for (int i = 0; i < responsaveis.size(); i++) {
+            if (Objects.equals(responsaveis.get(i).getCpfResponsavel(), responsavelAtualizado.getCpfResponsavel())) {
+                responsaveis.set(i, responsavelAtualizado);
+                encontrada = true;
+                break;
             }
         }
-        return removido;
+
+        if (!encontrada) {
+            throw new EntidadeNaoEncontradaException("Responsável com CPF " + responsavelAtualizado.getCpfResponsavel() + " não encontrado para atualização.");
+        }
+        salvarDados();
     }
 
     @Override
-    public List<Responsavel> listarTodos() {
+    public void deletar(String cpf) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
+        if (cpf == null || cpf.trim().isEmpty()) {
+            throw new DadoInvalidoException("CPF para deleção não pode ser nulo ou vazio.");
+        }
+        boolean removido = responsaveis.removeIf(r -> Objects.equals(r.getCpfResponsavel(), cpf));
+        if (!removido) {
+            throw new EntidadeNaoEncontradaException("Responsável com CPF " + cpf + " não encontrado para exclusão.");
+        }
+        salvarDados();
+    }
+
+    @Override
+    public List<Responsavel> listarTodos() throws IOException {
         return new ArrayList<>(responsaveis);
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         this.responsaveis.clear();
-        try {
-            salvarDados();
-            System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
-        } catch (IOException e) {
-            System.err.println("Erro ao limpar o arquivo " + NOME_ARQUIVO + ": " + e.getMessage());
-        }
+        salvarDados();
     }
 }

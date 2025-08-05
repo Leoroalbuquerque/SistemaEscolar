@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AlunoRepositorioJson implements IRepositorio<Aluno, String> {
@@ -41,55 +40,64 @@ public class AlunoRepositorioJson implements IRepositorio<Aluno, String> {
         return new ArrayList<>();
     }
 
-    private void salvarDados() {
+    private void salvarDados() throws IOException {
         try {
             objectMapper.writeValue(new File(CAMINHO_ARQUIVO), alunos);
         } catch (IOException e) {
             System.err.println("Erro ao salvar dados de alunos: " + e.getMessage());
+            throw e;
         }
     }
 
     @Override
-    public void salvar(Aluno aluno) throws DadoInvalidoException {
+    public void salvar(Aluno aluno) throws DadoInvalidoException, IOException {
         if (aluno == null) {
             throw new DadoInvalidoException("Aluno não pode ser nulo.");
         }
-        if (buscarPorId(aluno.getMatricula()).isPresent()) {
-            throw new DadoInvalidoException("Aluno com matrícula " + aluno.getMatricula() + " já existe.");
+        try {
+            if (buscarPorId(aluno.getMatricula()) != null) {
+                throw new DadoInvalidoException("Aluno com matrícula " + aluno.getMatricula() + " já existe.");
+            }
+        } catch (EntidadeNaoEncontradaException e) {
         }
         alunos.add(aluno);
         salvarDados();
     }
 
     @Override
-    public Optional<Aluno> buscarPorId(String matricula) {
+    public Aluno buscarPorId(String matricula) throws IOException, EntidadeNaoEncontradaException {
         return alunos.stream()
                 .filter(a -> a.getMatricula().equals(matricula))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Aluno com matrícula " + matricula + " não encontrado."));
     }
 
     @Override
-    public List<Aluno> listarTodos() {
+    public List<Aluno> listarTodos() throws IOException {
         return new ArrayList<>(alunos);
     }
 
     @Override
-    public void atualizar(Aluno aluno) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void atualizar(Aluno aluno) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (aluno == null) {
-            throw new DadoInvalidoException("Aluno não pode ser nulo.");
+            throw new DadoInvalidoException("Aluno não pode ser nulo para atualização.");
         }
-        Optional<Aluno> existenteOpt = buscarPorId(aluno.getMatricula());
-        if (existenteOpt.isEmpty()) {
+        boolean encontrada = false;
+        for (int i = 0; i < alunos.size(); i++) {
+            if (alunos.get(i).getMatricula().equals(aluno.getMatricula())) {
+                alunos.set(i, aluno);
+                encontrada = true;
+                break;
+            }
+        }
+        if (!encontrada) {
             throw new EntidadeNaoEncontradaException("Aluno com matrícula " + aluno.getMatricula() + " não encontrado para atualização.");
         }
-        alunos = alunos.stream()
-                .map(a -> a.getMatricula().equals(aluno.getMatricula()) ? aluno : a)
-                .collect(Collectors.toList());
         salvarDados();
     }
 
     @Override
-    public boolean deletar(String matricula) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String matricula) throws EntidadeNaoEncontradaException, DadoInvalidoException, IOException {
         if (matricula == null || matricula.isEmpty()) {
             throw new DadoInvalidoException("Matrícula do aluno não pode ser nula ou vazia.");
         }
@@ -98,11 +106,10 @@ public class AlunoRepositorioJson implements IRepositorio<Aluno, String> {
             throw new EntidadeNaoEncontradaException("Aluno com matrícula " + matricula + " não encontrado para exclusão.");
         }
         salvarDados();
-        return removido;
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         alunos.clear();
         salvarDados();
     }

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DisciplinaTurma implements Serializable {
@@ -11,11 +12,20 @@ public class DisciplinaTurma implements Serializable {
 
     private String id;
     private Disciplina disciplina;
+    @JsonBackReference("professor-disciplinas")
     private Professor professor;
+    @JsonBackReference("turma-disciplinas")
     private Turma turma;
 
     public DisciplinaTurma() {
         this.id = UUID.randomUUID().toString();
+    }
+
+    public DisciplinaTurma(Disciplina disciplina, Turma turma, int par) {
+        this();
+        this.disciplina = disciplina;
+        this.turma = turma;
+        this.professor = null;
     }
 
     public DisciplinaTurma(Disciplina disciplina, Professor professor, Turma turma) {
@@ -87,10 +97,10 @@ public class DisciplinaTurma implements Serializable {
         String professorNome = (professor != null ? professor.getNome() : "N/A");
         String turmaNome = (turma != null ? turma.getNomeTurma() : "N/A");
         return "DisciplinaTurma{" +
-               "id='" + id + '\'' +
-               ", disciplina=" + disciplinaNome +
-               ", professor=" + professorNome +
-               ", turma=" + turmaNome +
-               '}';
+                "id='" + id + '\'' +
+                ", disciplina=" + disciplinaNome +
+                ", professor=" + professorNome +
+                ", turma=" + turmaNome +
+                '}';
     }
 }

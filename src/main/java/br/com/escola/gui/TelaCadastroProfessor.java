@@ -14,10 +14,10 @@ public class TelaCadastroProfessor extends JDialog {
 
     private JTextField campoRegistroFuncional;
     private JTextField campoNome;
-    private JTextField campoCPF; // Adicionado para CPF do Professor
+    private JTextField campoCPF;
     private JTextField campoTelefone;
     private JTextField campoEmail;
-    private JTextField campoEspecialidade; // Corrigido para Especialidade
+    private JTextField campoEspecialidade;
     private JTextField campoSalario;
 
     private JButton btnAdicionar;
@@ -36,12 +36,12 @@ public class TelaCadastroProfessor extends JDialog {
 
         this.fachada = Fachada.getInstance();
 
-        setSize(700, 650); // Ajustei a altura para o novo campo CPF
+        setSize(700, 650);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(parent);
 
         JPanel panelPrincipal = new JPanel(new BorderLayout());
-        JPanel panelForm = new JPanel(new GridLayout(7, 2, 10, 10)); // Ajustado para 7 linhas
+        JPanel panelForm = new JPanel(new GridLayout(7, 2, 10, 10));
         panelForm.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
         panelForm.add(new JLabel("Registro Funcional:"));
@@ -52,7 +52,7 @@ public class TelaCadastroProfessor extends JDialog {
         campoNome = new JTextField(20);
         panelForm.add(campoNome);
 
-        panelForm.add(new JLabel("CPF:")); // Novo campo CPF
+        panelForm.add(new JLabel("CPF:"));
         campoCPF = new JTextField(20);
         panelForm.add(campoCPF);
 
@@ -64,7 +64,7 @@ public class TelaCadastroProfessor extends JDialog {
         campoEmail = new JTextField(20);
         panelForm.add(campoEmail);
 
-        panelForm.add(new JLabel("Especialidade:")); // Corrigido para Especialidade
+        panelForm.add(new JLabel("Especialidade:"));
         campoEspecialidade = new JTextField(20);
         panelForm.add(campoEspecialidade);
 
@@ -109,10 +109,10 @@ public class TelaCadastroProfessor extends JDialog {
         try {
             String registroFuncional = campoRegistroFuncional.getText();
             String nome = campoNome.getText();
-            String cpf = campoCPF.getText(); // Novo campo
+            String cpf = campoCPF.getText();
             String telefonePessoa = campoTelefone.getText();
             String emailPessoa = campoEmail.getText();
-            String especialidade = campoEspecialidade.getText(); // Corrigido
+            String especialidade = campoEspecialidade.getText();
 
             double salario = 0.0;
             try {
@@ -161,10 +161,10 @@ public class TelaCadastroProfessor extends JDialog {
         try {
             String registroFuncional = campoRegistroFuncional.getText();
             String nome = campoNome.getText();
-            String cpf = campoCPF.getText(); // Novo campo
+            String cpf = campoCPF.getText();
             String telefonePessoa = campoTelefone.getText();
             String emailPessoa = campoEmail.getText();
-            String especialidade = campoEspecialidade.getText(); // Corrigido
+            String especialidade = campoEspecialidade.getText();
 
             double salario = 0.0;
             try {
@@ -197,17 +197,14 @@ public class TelaCadastroProfessor extends JDialog {
                 return;
             }
             int confirm = JOptionPane.showConfirmDialog(this,
-                    "Tem certeza que deseja deletar o professor com Registro Funcional " + registroFuncional + "?", "Confirmar Deleção",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            "Tem certeza que deseja deletar o professor com Registro Funcional " + registroFuncional + "?", "Confirmar Deleção",
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
             if (confirm == JOptionPane.YES_OPTION) {
-                if (fachada.deletarProfessor(registroFuncional)) {
-                    JOptionPane.showMessageDialog(this, "Professor deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    limparCampos();
-                    listarTodosProfessores();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Falha ao deletar professor. Verifique o Registro Funcional.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }
+                fachada.deletarProfessor(registroFuncional);
+                JOptionPane.showMessageDialog(this, "Professor deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                limparCampos();
+                listarTodosProfessores();
             }
         } catch (EntidadeNaoEncontradaException | DadoInvalidoException e) {
             JOptionPane.showMessageDialog(this, "Erro ao deletar professor: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
@@ -220,7 +217,7 @@ public class TelaCadastroProfessor extends JDialog {
     private void limparCampos() {
         campoRegistroFuncional.setText("");
         campoNome.setText("");
-        campoCPF.setText(""); // Limpa o novo campo
+        campoCPF.setText("");
         campoTelefone.setText("");
         campoEmail.setText("");
         campoEspecialidade.setText("");
@@ -257,7 +254,7 @@ public class TelaCadastroProfessor extends JDialog {
         if (professor != null) {
             campoRegistroFuncional.setText(professor.getRegistroFuncional());
             campoNome.setText(professor.getNome());
-            campoCPF.setText(professor.getCpf()); // Exibe o CPF
+            campoCPF.setText(professor.getCpf());
             campoTelefone.setText(professor.getTelefone());
             campoEmail.setText(professor.getEmail());
             campoEspecialidade.setText(professor.getEspecialidade());

@@ -17,6 +17,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.IOException;
+import java.time.ZoneId;
 
 public class TelaCadastroAluno extends JFrame {
 
@@ -146,8 +147,8 @@ public class TelaCadastroAluno extends JFrame {
                     cpfsResponsaveis.add(cpfResponsavelInput);
                 } catch (EntidadeNaoEncontradaException ex) {
                     int option = JOptionPane.showConfirmDialog(this,
-                            "O CPF do responsável (" + cpfResponsavelInput + ") não está cadastrado. Deseja cadastrá-lo agora?",
-                            "Responsável Não Encontrado", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                                    "O CPF do responsável (" + cpfResponsavelInput + ") não está cadastrado. Deseja cadastrá-lo agora?",
+                                    "Responsável Não Encontrado", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                     if (option == JOptionPane.YES_OPTION) {
                         TelaCadastroResponsavel telaResponsavel = new TelaCadastroResponsavel(this, true);
@@ -178,7 +179,7 @@ public class TelaCadastroAluno extends JFrame {
                     return;
             }
             
-            Aluno alunoParaAdicionar = new Aluno(nomeAluno, matricula, "sem_telefone_aluno", "sem_email_aluno", 
+            Aluno alunoParaAdicionar = new Aluno(nomeAluno, matricula, "sem_telefone_aluno", "sem_email_aluno",
                                                  matricula, dataNascimentoAluno, anoLetivo, cpfsResponsaveis);
 
             fachada.adicionarAluno(alunoParaAdicionar);
@@ -247,8 +248,8 @@ public class TelaCadastroAluno extends JFrame {
                     cpfsResponsaveis.add(cpfResponsavelInput);
                 } catch (EntidadeNaoEncontradaException ex) {
                     int option = JOptionPane.showConfirmDialog(this,
-                            "O CPF do responsável (" + cpfResponsavelInput + ") não está cadastrado. Deseja cadastrá-lo agora?",
-                            "Responsável Não Encontrado", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                                    "O CPF do responsável (" + cpfResponsavelInput + ") não está cadastrado. Deseja cadastrá-lo agora?",
+                                    "Responsável Não Encontrado", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
                     if (option == JOptionPane.YES_OPTION) {
                         TelaCadastroResponsavel telaResponsavel = new TelaCadastroResponsavel(this, true);
@@ -279,7 +280,7 @@ public class TelaCadastroAluno extends JFrame {
                     return;
             }
 
-            Aluno alunoAtualizado = new Aluno(nomeAluno, matricula, "sem_telefone_aluno", "sem_email_aluno", 
+            Aluno alunoAtualizado = new Aluno(nomeAluno, matricula, "sem_telefone_aluno", "sem_email_aluno",
                                                  matricula, dataNascimentoAluno, anoLetivo, cpfsResponsaveis);
             
             fachada.atualizarAluno(alunoAtualizado);
@@ -302,17 +303,14 @@ public class TelaCadastroAluno extends JFrame {
                 return;
             }
             int confirm = JOptionPane.showConfirmDialog(this,
-                    "Tem certeza que deseja deletar o aluno " + matricula + "?", "Confirmar Deleção",
-                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            "Tem certeza que deseja deletar o aluno " + matricula + "?", "Confirmar Deleção",
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
             if (confirm == JOptionPane.YES_OPTION) {
-                if (fachada.deletarAluno(matricula)) {
-                    JOptionPane.showMessageDialog(this, "Aluno deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
-                    limparCampos();
-                    listarTodosAlunos();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Falha ao deletar aluno. Verifique a matrícula.", "Erro", JOptionPane.ERROR_MESSAGE);
-                }
+                fachada.deletarAluno(matricula);
+                JOptionPane.showMessageDialog(this, "Aluno deletado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                limparCampos();
+                listarTodosAlunos();
             }
         } catch (EntidadeNaoEncontradaException | DadoInvalidoException | IOException e) {
             JOptionPane.showMessageDialog(this, "Erro ao deletar aluno: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);

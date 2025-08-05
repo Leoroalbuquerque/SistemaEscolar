@@ -15,8 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class ProfessorRepositorioJson implements IRepositorio<Professor, String> {
 
@@ -47,16 +46,18 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
         }
     }
 
-    private void salvarDados() {
+    private void salvarDados() throws IOException {
         try {
             objectMapper.writeValue(new File(NOME_ARQUIVO), professores);
         } catch (IOException e) {
             System.err.println("Erro ao salvar dados no arquivo " + NOME_ARQUIVO + ": " + e.getMessage());
+            throw e;
         }
     }
 
     @Override
-    public void salvar(Professor entidade) throws DadoInvalidoException {
+    public void salvar(Professor entidade) throws DadoInvalidoException, IOException {
+        carregarDados();
         if (entidade == null || entidade.getRegistroFuncional() == null || entidade.getRegistroFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Professor ou registro funcional não pode ser nulo.");
         }
@@ -64,27 +65,30 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
             throw new DadoInvalidoException("Nome do professor é obrigatório.");
         }
 
-        boolean existe = professores.stream()
-                .anyMatch(p -> p.getRegistroFuncional().equals(entidade.getRegistroFuncional()));
-        if (existe) {
+        try {
+            buscarPorId(entidade.getRegistroFuncional());
             throw new DadoInvalidoException("Já existe um professor com o registro funcional: " + entidade.getRegistroFuncional());
+        } catch (EntidadeNaoEncontradaException e) {
+            this.professores.add(entidade);
+            salvarDados();
         }
-        this.professores.add(entidade);
-        salvarDados();
     }
 
     @Override
-    public Optional<Professor> buscarPorId(String id) {
+    public Professor buscarPorId(String id) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
+        carregarDados();
         if (id == null || id.trim().isEmpty()) {
-            return Optional.empty();
+            throw new DadoInvalidoException("ID para busca não pode ser nulo ou vazio.");
         }
         return professores.stream()
-                .filter(p -> p.getRegistroFuncional().equals(id))
-                .findFirst();
+                .filter(p -> Objects.equals(p.getRegistroFuncional(), id))
+                .findFirst()
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Professor com registro " + id + " não encontrado."));
     }
 
     @Override
-    public void atualizar(Professor entidade) throws DadoInvalidoException, EntidadeNaoEncontradaException {
+    public void atualizar(Professor entidade) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
+        carregarDados();
         if (entidade == null || entidade.getRegistroFuncional() == null || entidade.getRegistroFuncional().trim().isEmpty()) {
             throw new DadoInvalidoException("Professor ou registro funcional não pode ser nulo para atualização.");
         }
@@ -92,38 +96,43 @@ public class ProfessorRepositorioJson implements IRepositorio<Professor, String>
             throw new DadoInvalidoException("Nome do professor é obrigatório para atualização.");
         }
 
-        Optional<Professor> professorExistenteOpt = buscarPorId(entidade.getRegistroFuncional());
-        if (professorExistenteOpt.isEmpty()) {
-            throw new EntidadeNaoEncontradaException("Professor com registro " + entidade.getRegistroFuncional() + " não encontrado para atualização.");
+        boolean encontrada = false;
+        for (int i = 0; i < professores.size(); i++) {
+            if (Objects.equals(professores.get(i).getRegistroFuncional(), entidade.getRegistroFuncional())) {
+                professores.set(i, entidade);
+                encontrada = true;
+                break;
+            }
         }
 
-        professores.removeIf(p -> p.getRegistroFuncional().equals(entidade.getRegistroFuncional()));
-        this.professores.add(entidade);
+        if (!encontrada) {
+            throw new EntidadeNaoEncontradaException("Professor com registro " + entidade.getRegistroFuncional() + " não encontrado para atualização.");
+        }
         salvarDados();
     }
 
     @Override
-    public boolean deletar(String id) throws EntidadeNaoEncontradaException, DadoInvalidoException {
+    public void deletar(String id) throws IOException, EntidadeNaoEncontradaException, DadoInvalidoException {
+        carregarDados();
         if (id == null || id.trim().isEmpty()) {
             throw new DadoInvalidoException("ID para deleção não pode ser nulo ou vazio.");
         }
-        boolean removido = professores.removeIf(p -> p.getRegistroFuncional().equals(id));
+        boolean removido = professores.removeIf(p -> Objects.equals(p.getRegistroFuncional(), id));
         if (!removido) {
-            throw new EntidadeNaoEncontradaException("Professor com registro " + id + " não encontrado para deleção.");
+            throw new EntidadeNaoEncontradaException("Professor com registro " + id + " não encontrado para exclusão.");
         }
         salvarDados();
-        return true;
     }
 
     @Override
-    public List<Professor> listarTodos() {
+    public List<Professor> listarTodos() throws IOException {
+        carregarDados();
         return new ArrayList<>(professores);
     }
 
     @Override
-    public void limpar() {
+    public void limpar() throws IOException {
         this.professores.clear();
         salvarDados();
-        System.out.println("DEBUG: Arquivo " + NOME_ARQUIVO + " limpo.");
     }
 }

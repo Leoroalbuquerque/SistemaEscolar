@@ -1,16 +1,27 @@
 [ {
   "anoLetivo" : 2025,
-  "datasLetivas" : [ [ 2025, 8, 1 ] ],
-  "feriados" : [ ],
+  "datasLetivas" : [ [ 2025, 8, 14 ] ],
+  "feriados" : [ [ 2025, 8, 11 ] ],
   "avaliacoes" : [ {
-    "id" : "AVA001",
-    "nomeAvaliacao" : "Prova de Matemática",
-    "dataInicio" : [ 2025, 11, 10 ],
-    "dataFim" : [ 2025, 11, 10 ],
+    "id" : "CIE01",
+    "nomeAvaliacao" : "PRIMEIRA UNIDADE",
+    "dataInicio" : [ 2025, 8, 21 ],
+    "dataFim" : [ 2025, 8, 3 ],
     "disciplina" : {
-      "codigo" : "MAT01",
-      "nome" : "Matemática Avançada",
-      "cargaHoraria" : 60
+      "codigo" : "CIE01",
+      "nome" : "ciências",
+      "cargaHoraria" : 0
     }
+  } ],
+  "eventos" : [ {
+    "id" : "3b1215c5-f0a8-4cbd-b5ff-b1be282dd61c",
+    "data" : [ 2025, 8, 11 ],
+    "descricao" : "Dia de aprender",
+    "tipo" : "GENERICO"
+  }, {
+    "id" : "bc219596-214e-4001-9550-3d2ff794300f",
+    "data" : [ 2025, 8, 14 ],
+    "descricao" : "avalliação de matématica",
+    "tipo" : "GENERICO"
   } ]
 } ]

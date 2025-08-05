@@ -1,18 +1,19 @@
 [ {
-  "id" : "OCOR001",
-  "dataHora" : [ 2025, 7, 21, 22, 12, 17, 421093600 ],
-  "descricao" : "Atraso na entrada",
-  "registradorId" : "SEC0001",
+  "id" : "ocor03",
+  "dataHora" : [ 2025, 8, 4, 21, 46, 42, 978000000 ],
+  "descricao" : "briga",
+  "registradorId" : "PRO012",
   "aluno" : {
-    "nome" : "Maria Eduarda",
-    "cpf" : "555.555.555-55",
-    "telefone" : "9999-0001",
-    "email" : "maria.eduarda@email.com",
-    "matricula" : "2025001",
-    "anoLetivo" : 6,
-    "cpfsResponsaveis" : [ "111.111.111-11" ],
-    "dataNascimento" : [ 2010, 3, 20 ]
+    "nome" : "pedro",
+    "cpf" : "1234567",
+    "telefone" : "sem_telefone_aluno",
+    "email" : "sem_email_aluno",
+    "matricula" : "1234567",
+    "anoLetivo" : 2026,
+    "cpfsResponsaveis" : [ "12345678910" ],
+    "dataNascimento" : [ 2014, 10, 9 ],
+    "responsavel" : "12345678910"
   },
-  "medidasTomadas" : "Advertência verbal",
+  "medidasTomadas" : "",
   "encerrada" : false
 } ]

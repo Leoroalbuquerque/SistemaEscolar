@@ -1,9 +1,13 @@
 [ {
-  "codigo" : "MAT01",
-  "nome" : "Matemática Avançada",
-  "cargaHoraria" : 60
+  "codigo" : "HIS03",
+  "nome" : "história",
+  "cargaHoraria" : 0
 }, {
-  "codigo" : "POR01",
-  "nome" : "Português e Redação",
-  "cargaHoraria" : 60
+  "codigo" : "GEO01",
+  "nome" : "geografia",
+  "cargaHoraria" : 0
+}, {
+  "codigo" : "MAT02",
+  "nome" : "matemática",
+  "cargaHoraria" : 0
 } ]
